@@ -12,7 +12,7 @@ By now, I still use a CSV editor, and my wife uses a raw texfile with 3 fields c
 
 After learning some basics on Django I thought it could be nice to have a personal app on a raspberrypi server to manage my expenses and generate a CSV file for Homebank.
 
-###Features:  
+### Features:  
 Starting with:  
  - user login for personal data.
  - easy input data in forms.
