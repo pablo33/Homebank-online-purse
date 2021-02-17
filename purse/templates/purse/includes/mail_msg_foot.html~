@@ -1,1 +1,0 @@
-<strong><a href="http://{{ domain }}{% url 'purse:welcome' %}" >Homebank online Purse</a></strong>
