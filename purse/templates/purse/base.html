@@ -1,0 +1,38 @@
+<!DOCTYPE html>
+{% load static %}
+
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>Homebank online purse</title>
+
+</head>
+
+
+<body>
+
+<nav class="main_nav">
+			<ul>
+				{% if user.is_authenticated %}
+				<li><a href="{% url 'purse:editdata_user' pk=user.pk %}">{{ user }}</a></li>
+				<li><a href="{% url 'purse:logout_user' %}">Close session</a></li>
+				{% else %}
+				<li><a href="{% url 'purse:login_user' %}{% if next %}?next={{ next }}{% endif %}">Inicia sesión</a></li>
+				<li><a href="{% url 'purse:signup_user' %}">Sign up</a></li>
+				<li><a href="{% url 'purse:sendmypassw' %}">Restore my password</a></li>
+				{% endif %}		
+			</ul>
+</nav>
+
+	{% block contenido %}
+	{% endblock %}
+
+<div class="foot, foot_in_mini">
+	{% include 'purse/includes/foot.html'%}
+	</div>
+
+
+
+
+
+</body>
+</html>

@@ -1,0 +1,16 @@
+{% extends 'purse/base.html' %}
+
+{% block contenido %}
+	<h2>{{ title }}</h2>
+	<p>{{ msg }}</p>
+	<p>
+	{% if ppal %}
+	<a href="{% url 'purse:welcome' %}" >OK</a>
+	{% endif %}
+	{% if back %}
+	<a href="javascript: history.go(-1)">Volver</a>
+	{% endif %}
+	</p>
+{% endblock %}
+
+

@@ -1,0 +1,41 @@
+{% load static %}
+<!DOCTYPE html>
+<html>
+<head>
+	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+	<title>Welcome to your Homebank online Purse</title>
+</head>
+
+
+<body>
+<h1>Welcome to your Homebank online Purse</h1>
+
+<h2>{{ user.first_name }}, I'm glad you want to test this app.</h2>
+<p>This are your personal user and password to access: </p>
+
+<p>User: <strong>{{ user.username }}</strong></p>
+<p>e-mail: <strong>{{ user.email }}</strong></p>
+<p>Your password: <strong>{{ password }}</strong></p> 
+
+<div style="text-align: center;">
+<p>And now.... How can I continue?</p>
+</div>
+
+<p>
+<br/>Yor default purse has been created, you can manage more than one.
+<br/>start to introducing a starting cuantity,
+<br/>don't forget to introduce your expenses. 
+<br/>finally, export your expenses in a CSV file ready for Homebank app.  
+</p>
+
+
+<div style="text-align: center;">
+<p><a href="http://{{ domain }}{% url 'purse:welcome' %}" >ir al sitio</a></p>
+</div>
+
+
+{% include 'purse/includes/mail_msg_foot.html' %}
+
+</body>
+
+</html>

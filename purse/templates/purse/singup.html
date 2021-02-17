@@ -1,0 +1,15 @@
+{% extends 'purse/base.html' %}
+
+{% block contenido %}
+	<div id="signupform" class="forms">
+		<h2>{{ head }}</h2>
+	<p>	
+	<form method="POST" enctype="multipart/form-data" class="form">
+		{% csrf_token %}
+		{{ form.as_p }}
+		<input type="submit" value="Send" />
+		<input type="button" value="Back" onclick="javascript: history.go(-1)" />
+	</form>
+	</p>
+	</div>
+{% endblock %}

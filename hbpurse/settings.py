@@ -105,7 +105,7 @@ AUTH_PASSWORD_VALIDATORS = [
 # Internationalization
 # https://docs.djangoproject.com/en/3.0/topics/i18n/
 
-LANGUAGE_CODE = 'es-es'
+LANGUAGE_CODE = 'en-en'
 TIME_ZONE = 'Europe/Madrid'
 USE_I18N = True
 USE_L10N = True
@@ -121,3 +121,13 @@ STATIC_ROOT = os.path.join(BASE_DIR, 'static')
 MEDIA_URL = '/media/'
 MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 
+# Mail sending
+EMAIL_HOST = config('EMAIL_HOST')
+EMAIL_PORT = config('EMAIL_PORT')
+EMAIL_HOST_USER = config('EMAIL_HOST_USER')
+EMAIL_HOST_PASSWORD = config('EMAIL_HOST_PASSWORD')
+EMAIL_USE_TLS = ast.literal_eval(config ('EMAIL_USE_TLS'))
+
+# Redirecting to main web page on templete's links
+TEMPLATE_DOMAIN = config ('TEMPLATE_DOMAIN')
+EMAIL_ADMIN_CONTACT = config ('EMAIL_ADMIN_CONTACT')
