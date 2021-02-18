@@ -140,11 +140,12 @@ def editdata_user (request, pk):
 		userweb = User.objects.get(pk = pk)
 	except:
 		# requested user does not exist
-		return redirect ('recetas:welcome')
+		return redirect ('purse:welcome')
 	if request.user != userweb:
 		# requested user and logged user is not the same
-		return redirect ('recetas:welcome')
+		return redirect ('purse:welcome')
 	if request.method == "POST":
+		'''
 		try:
 			request.POST ['suscr_new']
 			suscr_new = True
@@ -160,6 +161,7 @@ def editdata_user (request, pk):
 			suscr_all = True
 		except:
 			suscr_all = False
+		
 		try:
 			userreg = Userdata.objects.get (user = request.user)
 			userreg.suscr_new = suscr_new
@@ -167,6 +169,7 @@ def editdata_user (request, pk):
 			userreg.save()
 		except:
 			userreg = Userdata.objects.create (user = request.user, suscr_new = suscr_new, suscr_all = suscr_all)
+		'''
 		userdata = User.objects.get (pk = pk)
 		userdata.first_name = request.POST ['first_name']
 		userdata.last_name	= request.POST ['last_name']
@@ -174,67 +177,53 @@ def editdata_user (request, pk):
 		try:
 			validate_email (email)
 		except:
-			return render (request, 'recetas/msgs/msgconfirm.html',
+			return render (request, 'purse/msgs/msgconfirm.html',
 						{
-						'secciones' 	: 	secciones (),
-						'title'	: 'Editar datos de usuario',
-						'msg' 	: 'Introduce un e-mail válido',
+						'title'	: 'Edit your data',
+						'msg' 	: 'Please, set a valid e-mail',
 						'back' 	: True,
 						})
 		userdata.email = request.POST ['email']
 		userdata.save()
-		if suscr_my:
-			suscribeme_to_an_user (request.user, request.user)
-		return render (request, 'recetas/msgs/msgconfirm.html',
+		return render (request, 'purse/msgs/msgconfirm.html',
 				{
-				'secciones' 	: 	secciones (),
-				'title'	: 'Actualizar tus datos',
-				'msg' 	: 'Tus datos se han guardado.',
+				'title'	: 'Edit your data',
+				'msg' 	: 'Your data has been stored',
 				'ppal'	: True,
 				})
-	try:
-		userreg = Userdata.objects.get (user = request.user)
-	except:
-		userreg = None
-
-	context = {	'secciones' 		: 	secciones (),
-				'user'				: 	request.user,
-				'tip_random'		:	fetch_tip("Opciones de suscripción"),
-				'userreg'			: 	userreg,
+	context = {	'user'				: 	request.user,
 			}
-	return render (request, 'recetas/editdata_user.html', context)
+	return render (request, 'purse/editdata_user.html', context)
 
 def changepass_user (request, pk):
 	try:
 		userweb = User.objects.get(pk = pk)
 	except:
 		# requested user does not exist
-		return redirect ('recetas:welcome')
+		return redirect ('purse:welcome')
 	if request.user != userweb:
 		# requested user and logged user is not the same
-		return redirect ('recetas:welcome')
+		return redirect ('purse:welcome')
 	if request.method == "POST":
 		password  = request.POST ['password1']
 		password2 = request.POST ['password2']
 		if password != password2:
-			return HttpResponse ('Las contraseñas no coinciden')
+			return HttpResponse ('Passwords do not match.')
 		user = User.objects.get(username = request.user)
 		user.set_password (password)
 		user.save()
 		login(request, user)
-		return render (request, 'recetas/msgs/msgconfirm.html',
+		return render (request, 'purse/msgs/msgconfirm.html',
 					{
-					'secciones' 	: 	secciones (),
-					'title'	: 'Cambiar contraseña',
-					'msg' 	: 'La contraseña ha cambiado',
+					'title'	: 'Change your password',
+					'msg' 	: 'Your password has changed',
 					'ppal'	: True,
 					})
 
 	form = PasschForm (instance = request.user)
-	return render (request, 'recetas/singup.html', {
-				'secciones' 	: 	secciones (),
+	return render (request, 'purse/singup.html', {
 				'form' : form,
-				'head' : "Ingresa una nueva contraseña"
+				'head' : "Enter a new password"
 				})
 
 def resetmypassw (request):
@@ -244,23 +233,22 @@ def resetmypassw (request):
 		try:
 			validate_email (email)
 		except:
-			return HttpResponse ('introduce un e-mail válido: <strong>%s</strong>'%email)
+			return HttpResponse ('Please, set a valid e-mail: <strong>%s</strong>'%email)
 		try:
 			user = User.objects.get(email = email, username = username)
 		except:
-			return render (request, 'recetas/msgs/msgconfirm.html',
+			return render (request, 'purse/msgs/msgconfirm.html',
 						{
-						'secciones' 	: 	secciones (),
-						'title'	: 'Restablecer contraseña',
-						'msg' 	: 'No hay ningún usuario registrado con estos datos',
+						'title'	: 'Reset your password',
+						'msg' 	: 'There is not user with this data',
 						'back'	: True,
 						})
 		uid = urlsafe_base64_encode(force_bytes(user.pk))
 		token = default_token_generator.make_token(user)
 		send_user_mail (	recipients = 	user.email,
-							title = 		'Restablece la contraseña',
-							template = 		'recetas/mails/password_reset.html',
-							txtcontent = 	'%s, aún te queda un paso más para restablecer tu contraseña'%username,
+							title = 		'Password restore',
+							template = 		'purse/mails/password_reset.html',
+							txtcontent = 	'%s, there is one little step to reset your password.'%username,
 							templatecontext = {
 												'domain'	:	settings.TEMPLATE_DOMAIN,
 												'user'		:	user,
@@ -268,21 +256,20 @@ def resetmypassw (request):
 												'token'		:	token,
 												}
 							)
-		return render (request, 'recetas/msgs/msgconfirm.html',
+		return render (request, 'purse/msgs/msgconfirm.html',
 						{
-						'secciones' 	: 	secciones (),
-						'title'	: 'Restablecer contraseña',
-						'msg' 	: 'Se ha enviado un e-mail para restablecer su contraseña',
+						'title'	: 'Password reset',
+						'msg' 	: 'an e-mail has been send to reset your password',
 						'ppal' 	: True,
 						})
-	return render (request, 'recetas/remembermypassword_user.html', {'secciones' 	: 	secciones ()} )
+	return render (request, 'purse/remembermypassword_user.html', {} )
 
 def resetconfirm (request, uidb64, token):
 	if request.method == "POST":
 		password  = request.POST ['password1']
 		password2 = request.POST ['password2']
 		if password != password2:
-			return HttpResponse ('Las contraseñas no coinciden')
+			return HttpResponse ('passwords did not match')
 		for user in User.objects.all():
 			if default_token_generator.check_token(user, token):
 				break
@@ -290,16 +277,14 @@ def resetconfirm (request, uidb64, token):
 		user.save()
 
 		login(request, user)
-		return render (request, 'recetas/msgs/msgconfirm.html',
+		return render (request, 'purse/msgs/msgconfirm.html',
 					{
-					'secciones' 	: 	secciones (),
-					'title'	: 'Restablecer la contraseña',
-					'msg' 	: 'La contraseña ha sido restablecida',
+					'title'	: 'Set your password',
+					'msg' 	: 'Your new password has been stored',
 					'ppal'	: True,
 					})
 	form = PasschForm ()
-	return render (request, 'recetas/singup.html', {
-				'secciones' 	: 	secciones (),
+	return render (request, 'purse/singup.html', {
 				'form' : form,
-				'head' : "Ingresa una nueva contraseña"
+				'head' : "Set your new password"
 				})	

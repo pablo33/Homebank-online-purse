@@ -16,7 +16,7 @@
 				<li><a href="{% url 'purse:editdata_user' pk=user.pk %}">{{ user }}</a></li>
 				<li><a href="{% url 'purse:logout_user' %}">Close session</a></li>
 				{% else %}
-				<li><a href="{% url 'purse:login_user' %}{% if next %}?next={{ next }}{% endif %}">Inicia sesión</a></li>
+				<li><a href="{% url 'purse:login_user' %}{% if next %}?next={{ next }}{% endif %}">Log in</a></li>
 				<li><a href="{% url 'purse:signup_user' %}">Sign up</a></li>
 				<li><a href="{% url 'purse:sendmypassw' %}">Restore my password</a></li>
 				{% endif %}		

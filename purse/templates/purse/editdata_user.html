@@ -1,0 +1,23 @@
+{% extends 'purse/base.html' %}
+
+{% block contenido %}
+	<div id="editdata_user_form" class="forms">
+	<h2>Edit your data</h2>
+	<form method="post" action="{% url 'purse:editdata_user' pk=user.pk %}">
+		{% csrf_token %}
+		<p><label>Name <input type="text" name="first_name" value="{{ user.first_name }}" required /></label></p>
+		<p><label>Last name <input type="text" name="last_name" value="{{ user.last_name }}" required /></label></p>
+		<p><label>e-mail <input type="text" name="email" value="{{ user.email }}" required /></label></p>
+
+		<input type="submit" value="Modificar" />
+	</form>
+		<h3>Other actions</h3>
+	<p>
+	<form method="redirect" action="{% url 'purse:changepass_user' pk=user.pk %}">
+		{% csrf_token %}
+		<input type="submit" value="Change your password"/>
+		<input type="button" value="Back" onclick="javascript: history.go(-1)" />
+	</form>
+	</p>
+	</div>
+{% endblock %}
