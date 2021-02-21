@@ -1,0 +1,13 @@
+{% extends 'purse/base.html' %}
+{% load static %}
+{% block contenido %}
+
+<h1>Add a new purse to manage</h1>
+	<form method="post" action="{% url 'purse:add_new_purse' %}">
+		{% csrf_token %}
+		{{ form.as_p }}
+		<input type="submit" value="Add new purse"/>
+		<input type="button" value="Back" onclick="javascript: history.go(-1)" />
+	</form>
+
+{% endblock %}

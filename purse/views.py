@@ -1,6 +1,6 @@
 from django.shortcuts import render, HttpResponse, redirect
 from .models import Account, Expense, VisitCounter
-from .forms import SignUpForm, PasschForm
+from .forms import SignUpForm, PasschForm, PurseForm
 from hbpurse import settings
 from django.utils import timezone
 from django.utils.http import urlsafe_base64_encode
@@ -31,12 +31,62 @@ def send_user_mail(recipients, title, template, templatecontext, txtcontent = ''
     			html_message = htmlcontent,	#html content
     			)
 
+def create_purse (user):
+	""" Create a new empty purses
+	it uses defaults values
+		"""
+	Purse = Account (user = user)
+	Purse.save()
+
 # Create your views here.
 
 def welcome (request):
 	add_visitor (request)
 	#return HttpResponse ('Hello world')
+	if request.user.is_authenticated:
+		context = {
+					'purses' : Account.objects.filter(user = request.user),
+		}
+		return render (request, 'purse/purses.html', context)
 	return render(request, 'purse/welcome.html', {} )
+
+def new_purse (request):
+	if not request.user.is_authenticated:
+		return redirect ('purse:login_user')
+	if request.method == "POST":
+		form = PurseForm(request.POST)
+		if form.is_valid():
+			newaccount = form.save (commit = False)
+			newaccount.user = request.user
+			newaccount.cuantity = newaccount.adjustment
+			newaccount.save()
+		return redirect ('purse:welcome') 
+
+	context = { 'form' : PurseForm }
+	return render (request, 'purse/new_purse.html', context)
+
+def modify_purse (request, pk):
+	try:
+		account = Account.objects.get(pk = pk)
+	except:
+		return redirect ('purse:welcome')
+	if not request.user.is_authenticated:
+		return redirect ('purse:login_user')
+	if request.user != account.user:
+		return redirect ('purse:welcome')
+	if request.method == "POST":
+		form = PurseForm(request.POST, instance=account)
+		if form.is_valid():
+			account = form.save (commit=False)
+			account.user = request.user
+			account.save ()
+		return redirect ('purse:welcome')
+	form = PurseForm (instance=account)
+	context = { 'form' : form,
+				'purse': account,
+			 }
+	return render (request, 'purse/modify_purse.html', context)
+
 
 def login_user (request):
 	next = request.GET.get('next', '')
@@ -110,6 +160,7 @@ def SignUpView (request):
 			user = authenticate(request, username=username, password=password)
 			if user is not None:
 				login(request, user)
+			create_purse (user)
 			send_user_mail (	recipients = 	email,
 								title = 		'¡Welcome to your Homebank online Purse!',
 								template = 		'purse/mails/welcome_user.html',

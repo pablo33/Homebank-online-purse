@@ -20,11 +20,15 @@ class Account (models.Model):
 
 		]
 
-	user 	= models.ForeignKey ('auth.User', on_delete=models.CASCADE)		# related User object
-	name	= models.TextField ('Name', max_length=20, null=False, blank=False)		# Name it
-	color	= models.TextField ('color', choices=colorchoices, default="#FFD700")	# background color (default Gold)
-	adjustment = models.DecimalField (max_digits=6, decimal_places=2)		# starting amount of the account / adjust your real money
+	user 	= models.ForeignKey ('auth.User', on_delete=models.CASCADE, blank=False, null=False)		# related User object
+	name	= models.CharField ('Name', max_length=40, null=False, blank=False, default='my purse')		# Name it
+	color	= models.CharField ('color', max_length=7, choices=colorchoices, default="#FFD700")	# background color (default Gold)
+	adjustment = models.DecimalField (max_digits=6, decimal_places=2, default=0)		# starting amount of the account / adjust your real money
 	active = models.BooleanField ('Active', default=True)					# Activate or deactivate the account
+	cuantity = models.DecimalField (max_digits=6, decimal_places=2, default=0)		# Cuantity for this account
+
+	def __str__ (self):
+		return self.name
 
 class Expense (models.Model):
 	""" List of expenses:
@@ -55,18 +59,18 @@ class Expense (models.Model):
 	exported = models.BooleanField ('exported', default=False)
 	date 	= models.DateField ('Date', auto_now_add=True, null=False)
 	paymode = models.PositiveIntegerField ('paymode', choices=paymodechoice, default=3)
-	info	= models.TextField ('info', max_length=15, default="")
-	payee	= models.TextField ('payee', max_length=20, default="")
-	wording	= models.TextField ('wording', max_length=200, default="")
+	info	= models.CharField ('info', max_length=15, default="")
+	payee	= models.CharField ('payee', max_length=20, default="")
+	wording	= models.CharField ('wording', max_length=200, default="")
 	amount	= models.DecimalField (max_digits=6, decimal_places=2)
-	tags	= models.TextField ('tags', max_length=20, default="")
+	tags	= models.CharField ('tags', max_length=20, default="")
 	image	= models.ImageField ('image', blank=True, upload_to=join(MYAPPBASE_DIR,'images'))
-	currency= models.TextField ('currency', blank=True, default="€", max_length=8)
+	currency= models.CharField ('currency', max_length=8, blank=True, default="€")
 
 class VisitCounter (models.Model):
 	""" Store visitors counter	"""
-	user		= models.TextField ('user', max_length=150)
-	ip			= models.TextField ('ip', max_length=50, null= True)
+	user		= models.CharField ('user', max_length=150)
+	ip			= models.CharField ('ip', max_length=50, null= True)
 	timevisit	= models.DateTimeField ('Fecha', auto_now_add=True, null=True)
 
 	def __str__(self):

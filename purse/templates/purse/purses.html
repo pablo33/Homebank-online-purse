@@ -1,0 +1,20 @@
+{% extends 'purse/base.html' %}
+{% load static %}
+{% block contenido %}
+
+<h1>YOUR PURSES</h1>
+
+<h2>manage your purses</h2>
+<p>here is list of purses to work with</p>
+<ul>
+	{% for purse in purses %}
+	<li> {{ purse.name }} | <a href="{% url 'purse:modify_purse' pk=purse.pk %}"> {{ purse.adjustment }} | {{ purse.active }} | {{ purse.cuantity }}</a></li>
+	{% endfor %}
+</ul>
+
+
+<p><a href="{% url 'purse:add_new_purse' %}">Add a new purse</a></p>
+
+
+
+{% endblock %}
