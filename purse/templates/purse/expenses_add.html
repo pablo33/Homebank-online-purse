@@ -1,0 +1,23 @@
+{% extends 'purse/base.html' %}
+{% load static %}
+{% block contenido %}
+<a href="{% url 'purse:welcome' %}">Close this purse</a>
+<div style="background :{{ purse.color }}" >
+<h1>Expenses for {{ purse.name }}</h1>
+	<form method="post" action="{% url 'purse:expenses' pk=purse.pk%}">
+		{% csrf_token %}
+		{{ form.as_p }}
+		<input type="submit" value="Add this expense"/>
+	</form>
+<p>Your purse balance is {{ purse.cuantity }} {{ purse.currency }}
+
+<ul>
+{% for expense in expenses %}
+	<li>
+	{{ expense.date }} | {{ expense.wording }} | {{ expense.amount }} | modify | delete
+	</li>
+{% endfor %}
+</ul>
+</div>
+
+{% endblock %}

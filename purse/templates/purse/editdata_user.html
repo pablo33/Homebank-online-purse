@@ -8,6 +8,7 @@
 		<p><label>Name <input type="text" name="first_name" value="{{ user.first_name }}" required /></label></p>
 		<p><label>Last name <input type="text" name="last_name" value="{{ user.last_name }}" required /></label></p>
 		<p><label>e-mail <input type="text" name="email" value="{{ user.email }}" required /></label></p>
+		<p><label>Show inactive purses <input class="forms_checkbox" type="checkbox" name="showinactive" value="showinactive" {% if userconfig.showinactive %}checked="checked"{% endif %} /></label></p>
 
 		<input type="submit" value="Modificar" />
 	</form>

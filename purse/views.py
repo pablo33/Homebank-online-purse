@@ -1,6 +1,6 @@
 from django.shortcuts import render, HttpResponse, redirect
-from .models import Account, Expense, VisitCounter
-from .forms import SignUpForm, PasschForm, PurseForm
+from .models import Account, Expense, VisitCounter, UserConfig
+from .forms import SignUpForm, PasschForm, PurseForm, ExpenseForm
 from hbpurse import settings
 from django.utils import timezone
 from django.utils.http import urlsafe_base64_encode
@@ -11,6 +11,8 @@ from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.core.validators import validate_email
 from django.template.loader import get_template
+from django.db.models import Sum
+
 
 
 def add_visitor (request):
@@ -38,14 +40,36 @@ def create_purse (user):
 	Purse = Account (user = user)
 	Purse.save()
 
+def adduserdefaults (user):
+	""" Set default configuration """
+	try:
+		config = UserConfig.objects.GET(user = user)
+	except:
+		config = UserConfig (user = user)
+	config.showinactive = False
+	config.save()
+
+def update_account (account):
+	total = (Expense.objects.filter(account=account).aggregate(Sum('amount')))
+	account.cuantity = float("%.2f"%total ['amount__sum']) + float(account.adjustment)
+	account.save()
+
 # Create your views here.
+#
+##############################
 
 def welcome (request):
 	add_visitor (request)
 	#return HttpResponse ('Hello world')
 	if request.user.is_authenticated:
+		activestatus = UserConfig.objects.get(user=request.user).showinactive
+		if activestatus:
+			accounts = Account.objects.filter(user = request.user)
+		else:
+			accounts = Account.objects.filter(user = request.user, active = True)
+
 		context = {
-					'purses' : Account.objects.filter(user = request.user),
+					'purses' : accounts,
 		}
 		return render (request, 'purse/purses.html', context)
 	return render(request, 'purse/welcome.html', {} )
@@ -87,6 +111,31 @@ def modify_purse (request, pk):
 			 }
 	return render (request, 'purse/modify_purse.html', context)
 
+def expenses_purse(request, pk):
+	try:
+		account = Account.objects.get(pk = pk)
+	except:
+		return redirect ('purse:welcome')
+	if not request.user.is_authenticated:
+		return redirect ('purse:login_user')
+	if request.user != account.user:
+		return redirect ('purse:welcome')
+	if request.method == 'POST':
+		form = ExpenseForm(request.POST)
+		if form.is_valid():
+			expense = form.save (commit=False)
+			expense.user = request.user
+			expense.account = account
+			expense.save ()
+			update_account (account)
+
+	expenses = Expense.objects.filter (account = account, exported=False).order_by ('-date', '-id')
+	context = {
+			'purse' 	: account,
+			'expenses' 	: expenses,
+			'form'		: ExpenseForm,
+			}
+	return render (request, 'purse/expenses_add.html', context)
 
 def login_user (request):
 	next = request.GET.get('next', '')
@@ -161,6 +210,7 @@ def SignUpView (request):
 			if user is not None:
 				login(request, user)
 			create_purse (user)
+			adduserdefaults (user)
 			send_user_mail (	recipients = 	email,
 								title = 		'¡Welcome to your Homebank online Purse!',
 								template = 		'purse/mails/welcome_user.html',
@@ -196,31 +246,18 @@ def editdata_user (request, pk):
 		# requested user and logged user is not the same
 		return redirect ('purse:welcome')
 	if request.method == "POST":
-		'''
 		try:
-			request.POST ['suscr_new']
-			suscr_new = True
+			request.POST ['showinactive']
+			showinactive = True
 		except:
-			suscr_new = False
+			showinactive = False
 		try:
-			request.POST ['suscr_my']
-			suscr_my = True
+			userconfig = UserConfig.objects.get(user=request.user)
+			userconfig.showinactive = showinactive
+			userconfig.save()
 		except:
-			suscr_my = False
-		try:
-			request.POST ['suscr_all']
-			suscr_all = True
-		except:
-			suscr_all = False
+			userconfig = UserConfig.objects.create (user = request.user, showinactive = showinactive)
 		
-		try:
-			userreg = Userdata.objects.get (user = request.user)
-			userreg.suscr_new = suscr_new
-			userreg.suscr_all = suscr_all
-			userreg.save()
-		except:
-			userreg = Userdata.objects.create (user = request.user, suscr_new = suscr_new, suscr_all = suscr_all)
-		'''
 		userdata = User.objects.get (pk = pk)
 		userdata.first_name = request.POST ['first_name']
 		userdata.last_name	= request.POST ['last_name']
@@ -243,6 +280,7 @@ def editdata_user (request, pk):
 				'ppal'	: True,
 				})
 	context = {	'user'				: 	request.user,
+				'userconfig'		: 	UserConfig.objects.get(user=request.user),
 			}
 	return render (request, 'purse/editdata_user.html', context)
 

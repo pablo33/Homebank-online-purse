@@ -1,7 +1,7 @@
 from django import forms
 from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
-from .models import Account
+from .models import Account, Expense
 
 class SignUpForm (UserCreationForm):
 	first_name 	= forms.CharField (required = True)
@@ -29,4 +29,16 @@ class PasschForm (UserCreationForm):
 class PurseForm (forms.ModelForm):
 	class Meta:
 		model = Account
-		fields = ('name','color','adjustment', 'active')
+		fields = ('name','color','adjustment', 'active', 'currency', 'showexported')
+
+class ExpenseForm (forms.ModelForm):
+	class Meta:
+		model = Expense
+		fields = (
+			'date',
+			#'info',
+			#'payee',
+			'wording',
+			'amount',
+			#'tags',
+			'image')
