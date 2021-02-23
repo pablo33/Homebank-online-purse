@@ -59,6 +59,7 @@ def update_account (account):
 ##############################
 
 def welcome (request):
+	next = request.GET.get('next', '')
 	add_visitor (request)
 	#return HttpResponse ('Hello world')
 	if request.user.is_authenticated:
@@ -67,12 +68,14 @@ def welcome (request):
 			accounts = Account.objects.filter(user = request.user)
 		else:
 			accounts = Account.objects.filter(user = request.user, active = True)
-
-		context = {
-					'purses' : accounts,
-		}
-		return render (request, 'purse/purses.html', context)
-	return render(request, 'purse/welcome.html', {} )
+		if len (accounts) > 1 or next == 'purses':		
+			context = {
+						'purses' : accounts,
+			}
+			return render (request, 'purse/purses.html', context) # list of purses
+		elif len (accounts) == 1:
+			return redirect ('purse:expenses', pk=accounts[0].pk ) # go directly to unique active purse
+	return render(request, 'purse/welcome.html', {} )  # go to welcome page
 
 def new_purse (request):
 	if not request.user.is_authenticated:
@@ -104,6 +107,7 @@ def modify_purse (request, pk):
 			account = form.save (commit=False)
 			account.user = request.user
 			account.save ()
+			update_account (account)
 		return redirect ('purse:welcome')
 	form = PurseForm (instance=account)
 	context = { 'form' : form,
@@ -136,6 +140,46 @@ def expenses_purse(request, pk):
 			'form'		: ExpenseForm,
 			}
 	return render (request, 'purse/expenses_add.html', context)
+
+def expenses_modify (request, pk):
+	try:
+		expense = Expense.objects.get(pk = pk)
+	except:
+		return redirect ('purse:welcome')
+	if not request.user.is_authenticated:
+		return redirect ('purse:login_user')
+	if request.user != expense.account.user:
+		return redirect ('purse:welcome')
+	if request.method == "POST":
+		form = ExpenseForm(request.POST, instance=expense)
+		if form.is_valid():
+			expense = form.save (commit=False)
+			expense.save ()
+			update_account (expense.account)
+		return redirect ('purse:expenses', pk=expense.account.pk)
+	form = ExpenseForm (instance=expense)
+	context = { 'form' : form,
+				'expense': expense,
+			 }
+	return render (request, 'purse/modify_expense.html', context)
+
+def expenses_delete (request, pk):
+	try:
+		expense = Expense.objects.get(pk = pk)
+	except:
+		return redirect ('purse:welcome')
+	if not request.user.is_authenticated:
+		return redirect ('purse:login_user')
+	if request.user != expense.account.user:
+		return redirect ('purse:welcome')
+	remove_expense (expense)  ### TODO
+	return render (request, 'purse/msgs/msgconfirm.html',
+			{
+			'title'	: 'Edit your data',
+			'msg' 	: 'Your data has been stored',
+			'ppal'	: True,
+			})
+	### TODO #######
 
 def login_user (request):
 	next = request.GET.get('next', '')

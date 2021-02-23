@@ -19,4 +19,6 @@ urlpatterns = [
 	path('purse/new',				views.new_purse,			name='add_new_purse'),
 	path('purse/modify/<int:pk>',	views.modify_purse,			name='modify_purse'),
 	path('purse/expenses/<int:pk>',	views.expenses_purse,		name='expenses'),
+	path('purse/expenses/modify/<int:pk>', views.expenses_modify, name='expenses_modify'),
+	path('purse/expenses/delete/<int:pk>', views.expenses_delete, name='expenses_delete'),
     ]

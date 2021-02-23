@@ -8,7 +8,9 @@
 <p>here is list of purses to work with</p>
 <ul>
 	{% for purse in purses %}
-	<li> <a href="{% url 'purse:expenses' pk=purse.pk %}" > {{ purse.name }} | {{ purse.cuantity }}{{ purse.currency }}</a> | <a href="{% url 'purse:modify_purse' pk=purse.pk %}"> config </a></li>
+	<li> <a href="{% url 'purse:expenses' pk=purse.pk %}" > {{ purse.name }} | {{ purse.cuantity }}{{ purse.currency }}</a>
+	|
+	<a href="{% url 'purse:modify_purse' pk=purse.pk %}"> config {%if not purse.active %} (Inactive) {% endif %}</a></li>
 	{% endfor %}
 </ul>
 

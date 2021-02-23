@@ -1,7 +1,7 @@
 {% extends 'purse/base.html' %}
 {% load static %}
 {% block contenido %}
-<a href="{% url 'purse:welcome' %}">Close this purse</a>
+<a href="{% url 'purse:welcome' %}?next=purses">Close this purse</a>
 <div style="background :{{ purse.color }}" >
 <h1>Expenses for {{ purse.name }}</h1>
 	<form method="post" action="{% url 'purse:expenses' pk=purse.pk%}">
@@ -14,7 +14,11 @@
 <ul>
 {% for expense in expenses %}
 	<li>
-	{{ expense.date }} | {{ expense.wording }} | {{ expense.amount }} | modify | delete
+	{{ expense.date }} | {{ expense.wording }} | {{ expense.amount }}
+	| 
+	<a href="{% url 'purse:expenses_modify' pk=expense.pk %}">modify</a>
+	| 
+	delete
 	</li>
 {% endfor %}
 </ul>
