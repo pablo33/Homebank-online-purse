@@ -10,6 +10,9 @@
 	{% if back %}
 	<a href="javascript: history.go(-1)">Back</a>
 	{% endif %}
+	{% if next %}
+	<a href="{{ next }}" >OK</a>
+	{% endif %}
 	</p>
 {% endblock %}
 

@@ -1,7 +1,9 @@
-from django.shortcuts import render, HttpResponse, redirect
+import os
+from datetime import timedelta
 from .models import Account, Expense, VisitCounter, UserConfig
 from .forms import SignUpForm, PasschForm, PurseForm, ExpenseForm
 from hbpurse import settings
+from django.shortcuts import render, HttpResponse, redirect
 from django.utils import timezone
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
@@ -15,9 +17,68 @@ from django.db.models import Sum
 
 
 
+def get_client_ip(request):
+    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+    if x_forwarded_for:
+        ip = x_forwarded_for.split(',')[-1].strip()
+    else:
+        ip = request.META.get('REMOTE_ADDR')
+    return ip
+
 def add_visitor (request):
-	# TO DO
-	pass
+	ip = get_client_ip (request)
+	user = request.user
+	now = timezone.now()
+	v = VisitCounter (user = user, ip = ip, timevisit = now)
+	checkin = False
+	
+	try:
+		lastv = VisitCounter.objects.filter (user = user, ip = ip).order_by ("-timevisit")[0]
+		if now - lastv.timevisit > timedelta (minutes = 60):
+			checkin = True # is a returning visitor from the same IP
+	except:
+		checkin = True # It's a new new visitor
+	if checkin:
+		v.save ()
+	return
+
+class Statistics:
+	"""Statistics for database """
+	visitor_since_days = 30		# counts the number of visits since las xx days
+	visitor_count = None		# visitors counter, a calculated field
+	visitor_since = None 		# visitors counted since this time. It's a datetime object, calculated
+	users_number  = None 		# Number of users at database
+	purses_count  = None 		# Number of purses
+	purses_active_count = None # Number of active purses
+
+	def __init__(self):
+		self.update()
+		self.__users__ ()
+		self.__purses_count__ ()
+
+	def update (self):
+		self.__visitor_sumarize__(self.visitor_since_days)
+		self.__purses_count__()
+
+	def __visitor_sumarize__(self, days = visitor_since_days):
+		""" number of visitors since xx days
+		it returns an integer.
+			"""
+		if type(days) is not type(int()):
+			raise NotIntegerError()
+		datesince = timezone.now() - timedelta (days=days)
+		self.visitor_count = VisitCounter.objects.filter(timevisit__gt = datesince).count()
+		self.visitor_since_days = days
+		self.visitor_since = datesince
+
+	def __users__ (self):
+		self.users_number = User.objects.count()
+
+	def __purses_count__ (self):
+		self.purses_count = Account.objects.count()
+		self.purses_active_count = Account.objects.filter(active = True).count()
+
+STnumbers = Statistics()
 
 
 def send_user_mail(recipients, title, template, templatecontext, txtcontent = ''):
@@ -51,8 +112,27 @@ def adduserdefaults (user):
 
 def update_account (account):
 	total = (Expense.objects.filter(account=account).aggregate(Sum('amount')))
-	account.cuantity = float("%.2f"%total ['amount__sum']) + float(account.adjustment)
+	sumexpenses = 0
+	if total ['amount__sum'] != None:
+		sumexpenses = "%.2f"%total ['amount__sum']
+	account.cuantity = float( sumexpenses ) + float(account.adjustment)
 	account.save()
+
+def remove_expense (expense):
+	if expense.image != "":
+		os.remove (settings.BASE_DIR + expense.image.url)
+	expense.delete()
+	return
+
+def basecontext (request):
+	""" Refresh user session pannels. It takes the last data at DB.
+		"""
+	add_visitor (request)
+	STnumbers.update()
+	return {
+			'statistics'		:	STnumbers,
+			}
+
 
 # Create your views here.
 #
@@ -60,8 +140,6 @@ def update_account (account):
 
 def welcome (request):
 	next = request.GET.get('next', '')
-	add_visitor (request)
-	#return HttpResponse ('Hello world')
 	if request.user.is_authenticated:
 		activestatus = UserConfig.objects.get(user=request.user).showinactive
 		if activestatus:
@@ -72,10 +150,13 @@ def welcome (request):
 			context = {
 						'purses' : accounts,
 			}
+			context.update (basecontext (request) )
 			return render (request, 'purse/purses.html', context) # list of purses
 		elif len (accounts) == 1:
 			return redirect ('purse:expenses', pk=accounts[0].pk ) # go directly to unique active purse
-	return render(request, 'purse/welcome.html', {} )  # go to welcome page
+	context = {}
+	context.update (basecontext (request) )
+	return render(request, 'purse/welcome.html', context )  # go to welcome page
 
 def new_purse (request):
 	if not request.user.is_authenticated:
@@ -90,6 +171,7 @@ def new_purse (request):
 		return redirect ('purse:welcome') 
 
 	context = { 'form' : PurseForm }
+	context.update (basecontext (request) )
 	return render (request, 'purse/new_purse.html', context)
 
 def modify_purse (request, pk):
@@ -113,6 +195,7 @@ def modify_purse (request, pk):
 	context = { 'form' : form,
 				'purse': account,
 			 }
+	context.update (basecontext (request) )
 	return render (request, 'purse/modify_purse.html', context)
 
 def expenses_purse(request, pk):
@@ -139,6 +222,7 @@ def expenses_purse(request, pk):
 			'expenses' 	: expenses,
 			'form'		: ExpenseForm,
 			}
+	context.update (basecontext (request) )
 	return render (request, 'purse/expenses_add.html', context)
 
 def expenses_modify (request, pk):
@@ -161,9 +245,11 @@ def expenses_modify (request, pk):
 	context = { 'form' : form,
 				'expense': expense,
 			 }
+	context.update (basecontext (request) )
 	return render (request, 'purse/modify_expense.html', context)
 
 def expenses_delete (request, pk):
+	next = request.GET.get('next', False)
 	try:
 		expense = Expense.objects.get(pk = pk)
 	except:
@@ -172,14 +258,14 @@ def expenses_delete (request, pk):
 		return redirect ('purse:login_user')
 	if request.user != expense.account.user:
 		return redirect ('purse:welcome')
-	remove_expense (expense)  ### TODO
-	return render (request, 'purse/msgs/msgconfirm.html',
-			{
-			'title'	: 'Edit your data',
-			'msg' 	: 'Your data has been stored',
-			'ppal'	: True,
-			})
-	### TODO #######
+	remove_expense (expense)
+	context = {
+			'title'	: 'Expense deleted',
+			'msg' 	: 'The expense has been deleted',
+			'next'	: next,
+			}
+	context.update (basecontext (request) )
+	return render (request, 'purse/msgs/msgconfirm.html', context)
 
 def login_user (request):
 	next = request.GET.get('next', '')
@@ -196,23 +282,26 @@ def login_user (request):
 			else:
 				return redirect (next)
 		else:
-			return render (request, 'purse/msgs/msgconfirm.html',
-				{
+			context = {
 				'title'	: 'Login',
 				'msg' 	: 'Usuario o contraseña incorrecta.',
 				'back' 	: True,
-				})
+				}
+			context.update (basecontext (request) )
+			return render (request, 'purse/msgs/msgconfirm.html', context)
 
 	else:
 		user, password = ("","")
 		if request.user.is_authenticated:
 			user = request.user
 			password = request.user.password
-		return render (request, 'purse/login.html', {
+		context = {
 			'user' 		: user,
 			'password' 	: password,
 			'next' 		: next,
-			})
+			}
+		context.update (basecontext (request) )
+		return render (request, 'purse/login.html', context )
 
 def logout_user (request):
 	if request.user.is_authenticated:
@@ -226,12 +315,12 @@ def SignUpView (request):
 		form = SignUpForm(request.POST)
 		username = request.POST ['username']
 		if len (User.objects.filter (username=username)) >= 1:
-			return render (request, 'purse/msgs/msgconfirm.html',
-						{
-						'title'	: 'Sign up yourself',
+			context = { 'title'	: 'Sign up yourself',
 						'msg' 	: 'User already exists.',
 						'back' 	: True,
-						})
+						}
+			context.update (basecontext (request) )
+			return render (request, 'purse/msgs/msgconfirm.html', context)
 		email = request.POST ['email']
 		try:
 			validate_email (email)
@@ -240,12 +329,12 @@ def SignUpView (request):
 		password  = request.POST ['password1']
 		password2 = request.POST ['password2']
 		if password != password2:
-			return render (request, 'purse/msgs/msgconfirm.html',
-						{
-						'title'	: 'Sign up yourself',
+			context = {	'title'	: 'Sign up yourself',
 						'msg' 	: 'Passwords does not match.',
 						'back' 	: True,
-						})
+						}
+			context.update (basecontext (request) )
+			return render (request, 'purse/msgs/msgconfirm.html', context)
 
 		if form.is_valid():
 			newuser = form.save(commit=False)
@@ -267,18 +356,18 @@ def SignUpView (request):
 								)
 			return redirect ('purse:welcome')
 		else:
-			return render (request, 'purse/msgs/msgconfirm.html',
-						{
-						'title'	: 'Sign up yourself',
+			context = {	'title'	: 'Sign up yourself',
 						'msg' 	: 'Some fields where incorrect.',
 						'back' 	: True,
-						})
+						}
+			context.update (basecontext (request) )
+			return render (request, 'purse/msgs/msgconfirm.html', context)
 	form = SignUpForm
-	return render (request, 'purse/singup.html',
-							 {
-							'form': form,
-							'head': "Sign up yourself",
-							})
+	context = {	'form': form,
+				'head': "Sign up yourself",
+				}
+	context.update (basecontext (request) )
+	return render (request, 'purse/singup.html', context)
 
 def editdata_user (request, pk):
 	try:
@@ -309,23 +398,24 @@ def editdata_user (request, pk):
 		try:
 			validate_email (email)
 		except:
-			return render (request, 'purse/msgs/msgconfirm.html',
-						{
-						'title'	: 'Edit your data',
+			context = {	'title'	: 'Edit your data',
 						'msg' 	: 'Please, set a valid e-mail',
 						'back' 	: True,
-						})
+						}
+			context.update (basecontext (request) )
+			return render (request, 'purse/msgs/msgconfirm.html', context )
 		userdata.email = request.POST ['email']
 		userdata.save()
-		return render (request, 'purse/msgs/msgconfirm.html',
-				{
-				'title'	: 'Edit your data',
-				'msg' 	: 'Your data has been stored',
-				'ppal'	: True,
-				})
+		context = { 'title'	: 'Edit your data',
+					'msg' 	: 'Your data has been stored',
+					'ppal'	: True,
+					}
+		context.update (basecontext (request) )
+		return render (request, 'purse/msgs/msgconfirm.html', context ) 
 	context = {	'user'				: 	request.user,
 				'userconfig'		: 	UserConfig.objects.get(user=request.user),
 			}
+	context.update (basecontext (request) )
 	return render (request, 'purse/editdata_user.html', context)
 
 def changepass_user (request, pk):
@@ -346,18 +436,19 @@ def changepass_user (request, pk):
 		user.set_password (password)
 		user.save()
 		login(request, user)
-		return render (request, 'purse/msgs/msgconfirm.html',
-					{
-					'title'	: 'Change your password',
+		context = {	'title'	: 'Change your password',
 					'msg' 	: 'Your password has changed',
 					'ppal'	: True,
-					})
+					}
+		context.update (basecontext (request) )
+		return render (request, 'purse/msgs/msgconfirm.html', context)
 
 	form = PasschForm (instance = request.user)
-	return render (request, 'purse/singup.html', {
-				'form' : form,
+	context = {	'form' : form,
 				'head' : "Enter a new password"
-				})
+				}
+	context.update (basecontext (request) )
+	return render (request, 'purse/singup.html', context)
 
 def resetmypassw (request):
 	if request.method == "POST":
@@ -370,12 +461,12 @@ def resetmypassw (request):
 		try:
 			user = User.objects.get(email = email, username = username)
 		except:
-			return render (request, 'purse/msgs/msgconfirm.html',
-						{
-						'title'	: 'Reset your password',
+			context = {	'title'	: 'Reset your password',
 						'msg' 	: 'There is not user with this data',
 						'back'	: True,
-						})
+						}
+			context.update (basecontext (request) )
+			return render (request, 'purse/msgs/msgconfirm.html', context)
 		uid = urlsafe_base64_encode(force_bytes(user.pk))
 		token = default_token_generator.make_token(user)
 		send_user_mail (	recipients = 	user.email,
@@ -389,13 +480,15 @@ def resetmypassw (request):
 												'token'		:	token,
 												}
 							)
-		return render (request, 'purse/msgs/msgconfirm.html',
-						{
-						'title'	: 'Password reset',
-						'msg' 	: 'an e-mail has been send to reset your password',
-						'ppal' 	: True,
-						})
-	return render (request, 'purse/remembermypassword_user.html', {} )
+		context = {	'title'	: 'Password reset',
+					'msg' 	: 'an e-mail has been send to reset your password',
+					'ppal' 	: True,
+					}
+		context.update (basecontext (request) )
+		return render (request, 'purse/msgs/msgconfirm.html', context)
+	context = {}
+	context.update (basecontext (request) )
+	return render (request, 'purse/remembermypassword_user.html', context )
 
 def resetconfirm (request, uidb64, token):
 	if request.method == "POST":
@@ -410,14 +503,16 @@ def resetconfirm (request, uidb64, token):
 		user.save()
 
 		login(request, user)
-		return render (request, 'purse/msgs/msgconfirm.html',
-					{
-					'title'	: 'Set your password',
+		context = { 'title'	: 'Set your password',
 					'msg' 	: 'Your new password has been stored',
 					'ppal'	: True,
-					})
+					}
+		context.update (basecontext (request) )
+		return render (request, 'purse/msgs/msgconfirm.html', context)
 	form = PasschForm ()
-	return render (request, 'purse/singup.html', {
-				'form' : form,
+	context = {	'form' : form,
 				'head' : "Set your new password"
-				})	
+				}
+	context.update (basecontext (request) )
+	return render (request, 'purse/singup.html', context)
+		
