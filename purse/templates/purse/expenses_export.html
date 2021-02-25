@@ -1,0 +1,31 @@
+{% extends 'purse/base.html' %}
+{% load static %}
+{% block contenido %}
+
+<h1>Export your expenses to CSV</h1>
+
+<h2>Export information</h2>
+
+{% if count %}
+<p>There is {{count}} expenses to export</p>
+<ul>
+	{% for expense in expenses %}
+		<li>
+		{{ expense.date }} | {{ expense.wording }} | {{ expense.amount }}
+		</li>
+	{% endfor %}
+</ul>
+This expenses will be marked as exported, are you sure? 
+	<form method="post" action="{% url 'purse:expenses_export' pk=purse.pk %}">
+		{% csrf_token %}
+		<!-- {{ form.as_p }} -->
+		<input type="submit" value="Yes, give me my data"/>
+		<input type="button" value="Nop" onclick="javascript: history.go(-1)" />
+	</form>
+{% else %}	
+<p>There is no expenses to export</p>
+<a href="{% url 'purse:welcome' %}" >OK</a>
+
+{% endif %}
+
+{% endblock %}

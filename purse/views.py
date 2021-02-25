@@ -15,8 +15,6 @@ from django.core.validators import validate_email
 from django.template.loader import get_template
 from django.db.models import Sum
 
-
-
 def get_client_ip(request):
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
     if x_forwarded_for:
@@ -266,6 +264,40 @@ def expenses_delete (request, pk):
 			}
 	context.update (basecontext (request) )
 	return render (request, 'purse/msgs/msgconfirm.html', context)
+
+def makecsv (expenseslist):
+	output = 'date;paymode;info;payee;wording;amount;category;tags\n'
+	for e in expenseslist:
+		mylist = [str(e.date), str(e.paymode), e.info, e.payee, e.wording, str(e.amount), "", e.tags]
+		output += '%s\n'%(";".join(mylist))
+	return output
+
+def expenses_export(request, pk):
+	try:
+		purse = Account.objects.get(pk = pk)
+	except:
+		return redirect ('purse:welcome')
+	if not request.user.is_authenticated:
+		return redirect ('purse:login_user')
+	if request.user != purse.user:
+		return redirect ('purse:welcome')
+	expenseslist = Expense.objects.filter(account = pk, exported=False)
+	context = { 'expenses'	: expenseslist,
+				'count'		: len (expenseslist),
+				'purse'		: Account.objects.get(pk=pk),
+				}
+	context.update (basecontext (request) )
+	if request.method == "POST":
+		csvcontent = makecsv (expenseslist)
+		response = HttpResponse (csvcontent, content_type='text/csv')
+		response ['Content-Disposition'] = 'attachment; filename="%s.csv"'%purse.name
+		for e in expenseslist:
+			e.exported = True
+			e.save()
+		return response
+
+	return render (request, 'purse/expenses_export.html', context)
+
 
 def login_user (request):
 	next = request.GET.get('next', '')

@@ -12,19 +12,34 @@
 		{{ form.as_p }}
 		<input type="submit" value="Add this expense"/>
 	</form>
-<p>Your purse balance is {{ purse.cuantity }} {{ purse.currency }}
+<p>
+Your purse balance is {{ purse.cuantity }} {{ purse.currency }}<br>
+Showing exported expenses
+</p>
 
 <ul>
 {% for expense in expenses %}
-	<li>
+	{% if not expense.exported %}
+	<li class="exported_{{ expense.exported }}" >
 	{{ expense.date }} | {{ expense.wording }} | {{ expense.amount }}
 	| 
 	<a href="{% url 'purse:expenses_modify' pk=expense.pk %}">modify</a>
 	| 
 	<a href="{% url 'purse:expenses_delete' pk=expense.pk %}?next={% url 'purse:expenses' pk=purse.pk %}">delete</a>
 	</li>
+	{% endif %}
+	
+	{% if expense.exported and purse.showexported %}
+	<li class="exported_{{ expense.exported }}" >
+	{{ expense.date }} | {{ expense.wording }} | {{ expense.amount }}
+	</li>
+	{% endif %}	
 {% endfor %}
 </ul>
+<a href="{% url 'purse:expenses_export' pk=purse.pk %}">Export expenses to CSV</a>
+
+
 </div>
+
 
 {% endblock %}
