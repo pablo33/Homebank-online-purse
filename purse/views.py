@@ -181,10 +181,6 @@ def basecontext (request):
 			'statistics'		:	STnumbers,
 			}
 
-
-
-
-
 def cleanmyfile (oldimage,imgfield ):
 	""" Checks new image filename and deletes oldimage
 		"""
@@ -245,9 +241,12 @@ def normalize_image (expense):
 			return True
 	return None
 
-
-
-
+def makecsv (expenseslist):
+	output = 'date;paymode;info;payee;wording;amount;category;tags\n'
+	for e in expenseslist:
+		mylist = [str(e.date), str(e.paymode), e.info.replace(";",","), e.payee.replace(";",","), e.wording.replace(";",","), str(e.amount), "", e.tags.replace(";",",")]
+		output += '%s\n'%(";".join(mylist))
+	return output
 
 
 # ----------------------------------------------------------------------------
@@ -393,13 +392,6 @@ def expenses_delete (request, pk):
 			}
 	context.update (basecontext (request) )
 	return render (request, 'purse/msgs/msgconfirm.html', context)
-
-def makecsv (expenseslist):
-	output = 'date;paymode;info;payee;wording;amount;category;tags\n'
-	for e in expenseslist:
-		mylist = [str(e.date), str(e.paymode), e.info, e.payee, e.wording, str(e.amount), "", e.tags]
-		output += '%s\n'%(";".join(mylist))
-	return output
 
 def expenses_export(request, pk):
 	try:

@@ -2,8 +2,8 @@
 {% load static %}
 {% block contenido %}
 <ul>
-	<li><a href="{% url 'purse:welcome' %}?next=purses">Close this purse</a></li>
 	<li><a href="{% url 'purse:modify_purse' pk=purse.pk%}">Config this purse</a></li>
+	<li><a href="{% url 'purse:welcome' %}?next=purses">Close this purse</a></li>
 </ul>
 <div style="background :{{ purse.color }}" >
 <h1>Expenses for {{ purse.name }}</h1>
