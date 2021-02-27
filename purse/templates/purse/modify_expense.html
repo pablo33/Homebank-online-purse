@@ -4,7 +4,7 @@
 
 <div style="background :{{ expense.account.color }}">
 <h1>Modify your expense</h1>
-	<form method="post" action="{% url 'purse:expenses_modify' pk=expense.pk %}">
+	<form method="post" enctype="multipart/form-data" action="{% url 'purse:expenses_modify' pk=expense.pk %}">
 		{% csrf_token %}
 		{{ form.as_p }}
 		<input type="submit" value="Save"/>

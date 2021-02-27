@@ -22,4 +22,5 @@ urlpatterns = [
 	path('purse/expenses/modify/<int:pk>', views.expenses_modify, name='expenses_modify'),
 	path('purse/expenses/delete/<int:pk>', views.expenses_delete, name='expenses_delete'),
 	path('purse/expenses/export/<int:pk>', views.expenses_export, name='expenses_export'),
+    path('purse/expenses/image/<int:pk>',  views.expenses_image, name='expenses_image'),
     ]

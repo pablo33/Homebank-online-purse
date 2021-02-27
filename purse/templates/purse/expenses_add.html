@@ -7,37 +7,47 @@
 </ul>
 <div style="background :{{ purse.color }}" >
 <h1>Expenses for {{ purse.name }}</h1>
-	<form method="post" action="{% url 'purse:expenses' pk=purse.pk%}">
+	<form method="post" enctype="multipart/form-data" action="{% url 'purse:expenses' pk=purse.pk%}">
 		{% csrf_token %}
 		{{ form.as_p }}
-		<input type="submit" value="Add this expense"/>
+		<input type="submit" value="Add expense"/>
 	</form>
 <p>
 Your purse balance is {{ purse.cuantity }} {{ purse.currency }}<br>
+{% if purse.showexported and count %}
 Showing exported expenses
+{% endif %}
 </p>
 
+
+{% if count %}
 <ul>
 {% for expense in expenses %}
 	{% if not expense.exported %}
 	<li class="exported_{{ expense.exported }}" >
-	{{ expense.date }} | {{ expense.wording }} | {{ expense.amount }}
+	{{ expense.date|date:'Y-m-d D' }} | {{ expense.wording }} | {{ expense.amount }}
 	| 
 	<a href="{% url 'purse:expenses_modify' pk=expense.pk %}">modify</a>
 	| 
 	<a href="{% url 'purse:expenses_delete' pk=expense.pk %}?next={% url 'purse:expenses' pk=purse.pk %}">delete</a>
+	{% if expense.image %}
+	<a href="{% url 'purse:expenses_image' pk=expense.pk %}">(IMAGE)</a>
+	{% endif %}
 	</li>
 	{% endif %}
 	
 	{% if expense.exported and purse.showexported %}
 	<li class="exported_{{ expense.exported }}" >
-	{{ expense.date }} | {{ expense.wording }} | {{ expense.amount }}
+	{{ expense.date|date:'Y-m-d D' }} | {{ expense.wording }} | {{ expense.amount }}
+	{% if expense.image %}
+	 (IMAGE)
+	{% endif %}
 	</li>
 	{% endif %}	
 {% endfor %}
 </ul>
 <a href="{% url 'purse:expenses_export' pk=purse.pk %}">Export expenses to CSV</a>
-
+{% endif %}
 
 </div>
 

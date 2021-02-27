@@ -29,7 +29,7 @@ class Account (models.Model):
 	active = models.BooleanField ('Active', default=True)					# Activate or deactivate the account
 	cuantity = models.DecimalField (max_digits=6, decimal_places=2, default=0)		# Cuantity for this account
 	currency= models.CharField ('currency', max_length=8, blank=True, default="€")
-	showexported=models.BooleanField ('Show exported transactions', default=False)
+	showexported=models.BooleanField ('Show exported expenses', default=False)
 
 	def __str__ (self):
 		return self.name
@@ -68,7 +68,11 @@ class Expense (models.Model):
 	wording	= models.CharField ('wording', max_length=200, default="")
 	amount	= models.DecimalField (max_digits=6, decimal_places=2)
 	tags	= models.CharField ('tags', max_length=20, default="", blank=True)
-	image	= models.ImageField ('image', blank=True, upload_to=join(MYAPPBASE_DIR,'images'))
+	image	= models.ImageField ('image', blank=True, upload_to=join(MYAPPBASE_DIR,'expenses'))
+
+	def __str__(self):
+		return self.wording
+
 
 class VisitCounter (models.Model):
 	""" Store visitors counter	"""

@@ -1,4 +1,5 @@
-import os
+import os, re
+from PIL import Image
 from datetime import timedelta
 from .models import Account, Expense, VisitCounter, UserConfig
 from .forms import SignUpForm, PasschForm, PurseForm, ExpenseForm
@@ -13,7 +14,53 @@ from django.contrib.auth.tokens import default_token_generator
 from django.core.mail import send_mail
 from django.core.validators import validate_email
 from django.template.loader import get_template
-from django.db.models import Sum
+from django.db.models import Sum, Count
+
+# ------------------------ Utils --------------------------------------------
+
+def itemcheck(pointer):
+	""" returns what kind of a pointer is """
+	if not (type(pointer) is str or type(pointer) is unicode):
+		raise NotStringError ('Bad input, it must be a string')
+	if pointer.find("//") != -1 :
+		raise MalformedPathError ('Malformed Path, it has double slashes')
+	
+	if os.path.isfile(pointer):
+		return 'file'
+	if os.path.isdir(pointer):
+		return 'folder'
+	if os.path.islink(pointer):
+		return 'link'
+	return ""
+
+def Nextfilenumber (dest):
+	''' Returns the next filename counter as filename(nnn).ext
+	input: /path/to/filename.ext
+	output: /path/to/filename(n).ext
+		'''
+	if dest == "":
+		raise EmptyStringError ('empty strings as input are not allowed')
+	filename = os.path.basename (dest)
+	extension = os.path.splitext (dest)[1]
+	# extract secuence
+	expr = '\(\d{1,}\)'+extension
+	mo = re.search (expr, filename)
+	try:
+		grupo = mo.group()
+	except:
+		#  print ("No final counter expression was found in %s. Counter is set to 0" % dest)
+		counter = 0
+		cut = len (extension)
+	else:
+		#  print ("Filename has a final counter expression.  (n).extension ")
+		cut = len (mo.group())
+		countergroup = (re.search ('\d{1,}', grupo))
+		counter = int (countergroup.group()) + 1
+	if cut == 0 :
+		newfilename = os.path.join( os.path.dirname(dest), filename + "(" + str(counter) + ")" + extension)
+	else:
+		newfilename = os.path.join( os.path.dirname(dest), filename [0:-cut] + "(" + str(counter) + ")" + extension)
+	return newfilename
 
 def get_client_ip(request):
     x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
@@ -46,17 +93,17 @@ class Statistics:
 	visitor_count = None		# visitors counter, a calculated field
 	visitor_since = None 		# visitors counted since this time. It's a datetime object, calculated
 	users_number  = None 		# Number of users at database
+	users_active  = None 		# Active users since "visitor_since_days"
 	purses_count  = None 		# Number of purses
 	purses_active_count = None # Number of active purses
 
 	def __init__(self):
 		self.update()
-		self.__users__ ()
-		self.__purses_count__ ()
 
 	def update (self):
 		self.__visitor_sumarize__(self.visitor_since_days)
 		self.__purses_count__()
+		self.__users__ ()
 
 	def __visitor_sumarize__(self, days = visitor_since_days):
 		""" number of visitors since xx days
@@ -68,13 +115,16 @@ class Statistics:
 		self.visitor_count = VisitCounter.objects.filter(timevisit__gt = datesince).count()
 		self.visitor_since_days = days
 		self.visitor_since = datesince
-
-	def __users__ (self):
-		self.users_number = User.objects.count()
+		q = VisitCounter.objects.filter(timevisit__gt = datesince).aggregate(Count('user', distinct=True))
+		self.users_active = q['user__count']
 
 	def __purses_count__ (self):
 		self.purses_count = Account.objects.count()
 		self.purses_active_count = Account.objects.filter(active = True).count()
+
+	def __users__ (self):
+		self.users_number = User.objects.count()
+
 
 STnumbers = Statistics()
 
@@ -94,7 +144,7 @@ def send_user_mail(recipients, title, template, templatecontext, txtcontent = ''
 
 def create_purse (user):
 	""" Create a new empty purses
-	it uses defaults values
+	it uses defaults values from models
 		"""
 	Purse = Account (user = user)
 	Purse.save()
@@ -132,7 +182,77 @@ def basecontext (request):
 			}
 
 
-# Create your views here.
+
+
+
+def cleanmyfile (oldimage,imgfield ):
+	""" Checks new image filename and deletes oldimage
+		"""
+	targetfile = settings.BASE_DIR + oldimage
+	if oldimage != "":
+		if imgfield == "":
+			if itemcheck (targetfile) == 'file':
+				os.remove (targetfile)
+			return True
+		else:
+			if (os.path.basename(oldimage) != os.path.basename(imgfield.url)) or os.path.basename(imgfield.url).startswith(oldimage):
+				if itemcheck (targetfile) == 'file':
+					os.remove (settings.BASE_DIR + oldimage)
+				return True
+	return False
+
+def resize_image (imagepath, max_size):
+	""" Resize an imagefile to a maximus of pixels, width or height.
+	None of their sizes will pass the max_size
+	It will save the file as jpg and RGB colors
+	It will delete oldimage is it is hasn't a jpg as file extension.
+	It returns None if there is no conversion
+	It returns the (new or entered) imagepath if a conversion is done
+		"""
+	img = Image.open (imagepath)
+	if img.width < max_size and img.height < max_size:
+		# Image is smaller than max_size, factor is 1
+		factor = 1
+	elif img.width > img.height:
+		factor = img.width / max_size
+	else:
+		factor = img.height / max_size
+	width = int(img.width // factor)
+	height = int(img.height // factor)
+	if abs (width - max_size) == 1:
+		width = max_size
+		height += 1
+	if abs (height - max_size) == 1:
+		height = max_size
+		width += 1
+	img = img.resize (( width, height ))
+	img.mode = 'RGB'
+	newimagepath = os.path.splitext(imagepath)[0] + '.jpg'
+	if itemcheck (newimagepath) == 'file':
+		newimagepath = Nextfilenumber (newimagepath)
+	img.save(newimagepath)
+	if imagepath != newimagepath and itemcheck (imagepath) == 'file':
+		os.remove (imagepath)
+	return newimagepath
+
+def normalize_image (expense):
+	if expense.image:
+		imagepath = settings.BASE_DIR + expense.image.url
+		newimagepath = resize_image (imagepath, 800)
+		if newimagepath != imagepath:
+			expense.image = newimagepath [len(settings.MEDIA_ROOT)+1:]
+			expense.save()
+			return True
+	return None
+
+
+
+
+
+
+# ----------------------------------------------------------------------------
+
+# Your views here.
 #
 ##############################
 
@@ -206,18 +326,20 @@ def expenses_purse(request, pk):
 	if request.user != account.user:
 		return redirect ('purse:welcome')
 	if request.method == 'POST':
-		form = ExpenseForm(request.POST)
+		form = ExpenseForm(request.POST, request.FILES)
 		if form.is_valid():
 			expense = form.save (commit=False)
 			expense.user = request.user
 			expense.account = account
 			expense.save ()
+			normalize_image (expense)
 			update_account (account)
 
-	expenses = Expense.objects.filter (account = account, exported=False).order_by ('-date', '-id')
+	expenses = Expense.objects.filter (account = account).order_by ('-date', '-id')
 	context = {
 			'purse' 	: account,
 			'expenses' 	: expenses,
+			'count'		: len (expenses),
 			'form'		: ExpenseForm,
 			}
 	context.update (basecontext (request) )
@@ -232,11 +354,16 @@ def expenses_modify (request, pk):
 		return redirect ('purse:login_user')
 	if request.user != expense.account.user:
 		return redirect ('purse:welcome')
+	oldimage = ""
+	if expense.image != "":
+		oldimage = expense.image.url[:] # make a hardcopy of actual value	
 	if request.method == "POST":
-		form = ExpenseForm(request.POST, instance=expense)
+		form = ExpenseForm(request.POST, request.FILES, instance=expense)
 		if form.is_valid():
 			expense = form.save (commit=False)
+			cleanmyfile (oldimage,expense.image)
 			expense.save ()
+			normalize_image (expense)
 			update_account (expense.account)
 		return redirect ('purse:expenses', pk=expense.account.pk)
 	form = ExpenseForm (instance=expense)
@@ -257,6 +384,8 @@ def expenses_delete (request, pk):
 	if request.user != expense.account.user:
 		return redirect ('purse:welcome')
 	remove_expense (expense)
+	#if expense.image != "":
+	#	os.remove (settings.BASE_DIR + expense.image.url)
 	context = {
 			'title'	: 'Expense deleted',
 			'msg' 	: 'The expense has been deleted',
@@ -298,6 +427,18 @@ def expenses_export(request, pk):
 
 	return render (request, 'purse/expenses_export.html', context)
 
+def expenses_image (request, pk):
+	try:
+		expense = Expense.objects.get(pk = pk)
+	except:
+		return redirect ('purse:welcome')
+	if not request.user.is_authenticated:
+		return redirect ('purse:login_user')
+	if request.user != expense.user:
+		return redirect ('purse:welcome')
+	context = {	'expense' : expense,}
+	context.update (basecontext (request) )
+	return render (request, 'purse/showimage.html', context)
 
 def login_user (request):
 	next = request.GET.get('next', '')

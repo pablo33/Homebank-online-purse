@@ -1,0 +1,10 @@
+{% extends 'purse/base.html' %}
+{% load static %}
+{% block contenido %}
+
+<h1>Image for the expense</h1>
+<img src="{{ expense.image.url }}">
+<br>
+<input type="button" value="Back" onclick="javascript: history.go(-1)" />
+
+{% endblock %}
