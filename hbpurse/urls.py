@@ -18,7 +18,7 @@ from django.urls import path, include
 
 urlpatterns = [
     path('admin/', admin.site.urls),
-	path('', include('purse.urls')),
+	path('purse/', include('purse.urls')),
 	]
 
 from django.conf import settings
