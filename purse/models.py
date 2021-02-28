@@ -79,6 +79,7 @@ class VisitCounter (models.Model):
 	user		= models.CharField ('user', max_length=150)
 	ip			= models.CharField ('ip', max_length=50, null= True)
 	timevisit	= models.DateTimeField ('Fecha', auto_now_add=True, null=True)
+	app			= models.CharField ('App', max_length=50, blank=True, null=True)
 
 	def __str__(self):
 		return self.user + ":" + self.ip

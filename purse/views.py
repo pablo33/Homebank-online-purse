@@ -74,11 +74,11 @@ def add_visitor (request):
 	ip = get_client_ip (request)
 	user = request.user
 	now = timezone.now()
-	v = VisitCounter (user = user, ip = ip, timevisit = now)
+	v = VisitCounter (user = user, ip = ip, timevisit = now, app='purse')
 	checkin = False
 	
 	try:
-		lastv = VisitCounter.objects.filter (user = user, ip = ip).order_by ("-timevisit")[0]
+		lastv = VisitCounter.objects.filter (user = user, ip = ip, app='purse').order_by ("-timevisit")[0]
 		if now - lastv.timevisit > timedelta (minutes = 60):
 			checkin = True # is a returning visitor from the same IP
 	except:
@@ -112,10 +112,10 @@ class Statistics:
 		if type(days) is not type(int()):
 			raise NotIntegerError()
 		datesince = timezone.now() - timedelta (days=days)
-		self.visitor_count = VisitCounter.objects.filter(timevisit__gt = datesince).count()
+		self.visitor_count = VisitCounter.objects.filter(timevisit__gt = datesince, app='purse').count()
 		self.visitor_since_days = days
 		self.visitor_since = datesince
-		q = VisitCounter.objects.filter(timevisit__gt = datesince).aggregate(Count('user', distinct=True))
+		q = VisitCounter.objects.filter(timevisit__gt = datesince, app='purse').aggregate(Count('user', distinct=True))
 		self.users_active = q['user__count']
 
 	def __purses_count__ (self):
