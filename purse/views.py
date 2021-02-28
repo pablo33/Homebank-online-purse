@@ -3,7 +3,7 @@ from PIL import Image
 from datetime import timedelta
 from .models import Account, Expense, VisitCounter, UserConfig
 from .forms import SignUpForm, PasschForm, PurseForm, ExpenseForm
-from hbpurse import settings
+from proyectos33 import settings
 from django.shortcuts import render, HttpResponse, redirect
 from django.utils import timezone
 from django.utils.http import urlsafe_base64_encode
@@ -258,7 +258,12 @@ def makecsv (expenseslist):
 def welcome (request):
 	next = request.GET.get('next', '')
 	if request.user.is_authenticated:
-		activestatus = UserConfig.objects.get(user=request.user).showinactive
+		try:
+			activestatus = UserConfig.objects.get(user=request.user).showinactive
+		except:
+			create_purse (request.user)
+			adduserdefaults (request.user)
+			activestatus = UserConfig.objects.get(user=request.user).showinactive
 		if activestatus:
 			accounts = Account.objects.filter(user = request.user)
 		else:
