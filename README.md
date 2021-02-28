@@ -20,4 +20,7 @@ Starting with:
  - it tells you how many do you have at this time.
  - Export to Homebank CSV.
  - use SQlite database.
+ - add images for your tickets.
+
+More information at wiki pages.
  
