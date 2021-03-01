@@ -3,7 +3,8 @@ from PIL import Image
 from datetime import timedelta
 from .models import Account, Expense, VisitCounter, UserConfig
 from .forms import SignUpForm, PasschForm, PurseForm, ExpenseForm
-from proyectos33 import settings
+from hbpurse import settings
+# from proyectos33 import settings
 from django.shortcuts import render, HttpResponse, redirect
 from django.utils import timezone
 from django.utils.http import urlsafe_base64_encode
@@ -330,11 +331,19 @@ def expenses_purse(request, pk):
 	if request.user != account.user:
 		return redirect ('purse:welcome')
 	if request.method == 'POST':
+		try:
+			request.POST ['positive']
+			positive = True
+		except:
+			positive = False
 		form = ExpenseForm(request.POST, request.FILES)
 		if form.is_valid():
 			expense = form.save (commit=False)
 			expense.user = request.user
 			expense.account = account
+			expense.amount = -abs(expense.amount)
+			if positive:
+				expense.amount = -expense.amount
 			expense.save ()
 			normalize_image (expense)
 			update_account (account)
@@ -362,10 +371,18 @@ def expenses_modify (request, pk):
 	if expense.image != "":
 		oldimage = expense.image.url[:] # make a hardcopy of actual value	
 	if request.method == "POST":
+		try:
+			request.POST ['positive']
+			positive = True
+		except:
+			positive = False
 		form = ExpenseForm(request.POST, request.FILES, instance=expense)
 		if form.is_valid():
 			expense = form.save (commit=False)
 			cleanmyfile (oldimage,expense.image)
+			expense.amount = -abs(expense.amount)
+			if positive:
+				expense.amount = -expense.amount
 			expense.save ()
 			normalize_image (expense)
 			update_account (expense.account)

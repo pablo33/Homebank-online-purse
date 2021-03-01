@@ -5,11 +5,12 @@
 	<li><a href="{% url 'purse:modify_purse' pk=purse.pk%}">Config this purse</a></li>
 	<li><a href="{% url 'purse:welcome' %}?next=purses">Close this purse</a></li>
 </ul>
-<div style="background :{{ purse.color }}" >
+<div style="background :{{ purse.color " >
 <h1>Expenses for {{ purse.name }}</h1>
 	<form method="post" enctype="multipart/form-data" action="{% url 'purse:expenses' pk=purse.pk%}">
 		{% csrf_token %}
 		{{ form.as_p }}
+		<p><label>This transaction is positive <input class="forms_checkbox" type="checkbox" name="positive" value="positive" /></label></p>
 		<input type="submit" value="Add expense"/>
 	</form>
 <p>
