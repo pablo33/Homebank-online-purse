@@ -2,9 +2,12 @@
 {% load static %}
 {% block contenido %}
 
-<h1>Image for the expense</h1>
+<h2>Image for the expense</h2>
+<p>
 <img src="{{ expense.image.url }}">
-<br>
+</p>
+<p>
 <input type="button" value="Back" onclick="javascript: history.go(-1)" />
+</p>
 
 {% endblock %}

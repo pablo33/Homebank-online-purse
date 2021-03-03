@@ -3,8 +3,8 @@ from PIL import Image
 from datetime import timedelta
 from .models import Account, Expense, VisitCounter, UserConfig
 from .forms import SignUpForm, PasschForm, PurseForm, ExpenseForm
-from hbpurse import settings
-# from proyectos33 import settings
+#from hbpurse import settings
+from proyectos33 import settings
 from django.shortcuts import render, HttpResponse, redirect
 from django.utils import timezone
 from django.utils.http import urlsafe_base64_encode
@@ -116,7 +116,7 @@ class Statistics:
 		self.visitor_count = VisitCounter.objects.filter(timevisit__gt = datesince, app='purse').count()
 		self.visitor_since_days = days
 		self.visitor_since = datesince
-		q = VisitCounter.objects.filter(timevisit__gt = datesince, app='purse').aggregate(Count('user', distinct=True))
+		q = VisitCounter.objects.filter(timevisit__gt = datesince, app='purse').exclude(user = 'AnonymousUser').aggregate(Count('user', distinct=True))
 		self.users_active = q['user__count']
 
 	def __purses_count__ (self):
@@ -266,9 +266,9 @@ def welcome (request):
 			adduserdefaults (request.user)
 			activestatus = UserConfig.objects.get(user=request.user).showinactive
 		if activestatus:
-			accounts = Account.objects.filter(user = request.user)
+			accounts = Account.objects.filter(user = request.user).order_by('-active')
 		else:
-			accounts = Account.objects.filter(user = request.user, active = True)
+			accounts = Account.objects.filter(user = request.user, active = True).order_by('-active')
 		if len (accounts) > 1 or next == 'purses':		
 			context = {
 						'purses' : accounts,
@@ -405,6 +405,7 @@ def expenses_delete (request, pk):
 	if request.user != expense.account.user:
 		return redirect ('purse:welcome')
 	remove_expense (expense)
+	update_account (expense.account)
 	#if expense.image != "":
 	#	os.remove (settings.BASE_DIR + expense.image.url)
 	context = {

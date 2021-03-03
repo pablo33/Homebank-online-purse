@@ -1,53 +1,62 @@
 {% extends 'purse/base.html' %}
 {% load static %}
 {% block contenido %}
+<p>
+<div class="page_options">
 <ul>
-	<li><a href="{% url 'purse:modify_purse' pk=purse.pk%}">Config this purse</a></li>
-	<li><a href="{% url 'purse:welcome' %}?next=purses">Close this purse</a></li>
+	<li>This purse: 
+	<li><a href="{% url 'purse:modify_purse' pk=purse.pk%}">Config</a></li>
+	<li><a href="{% url 'purse:welcome' %}?next=purses">Close</a></li>
 </ul>
-<div style="background :{{ purse.color " >
-<h1>Expenses for {{ purse.name }}</h1>
+</div>
+<div class="addexpenses" style="background : {{purse.color}};"> <!-- {{ purse.color }} /-->
+<h2>Expenses for {{ purse.name }}</h2>
 	<form method="post" enctype="multipart/form-data" action="{% url 'purse:expenses' pk=purse.pk%}">
 		{% csrf_token %}
 		{{ form.as_p }}
 		<p><label>This transaction is positive <input class="forms_checkbox" type="checkbox" name="positive" value="positive" /></label></p>
-		<input type="submit" value="Add expense"/>
+		<p><input type="submit" value="Add expense"/></p>
 	</form>
-<p>
-Your purse balance is {{ purse.cuantity }} {{ purse.currency }}<br>
+<p class="resalt">Your purse balance is {{ purse.cuantity }} {{ purse.currency }}</p>
 {% if purse.showexported and count %}
+<p class="exported_True">
 Showing exported expenses
+<p>
 {% endif %}
 </p>
 
 
 {% if count %}
-<ul>
+<table>
 {% for expense in expenses %}
+	<tr class="exported_{{ expense.exported }}">
 	{% if not expense.exported %}
-	<li class="exported_{{ expense.exported }}" >
-	{{ expense.date|date:'Y-m-d D' }} | {{ expense.wording }} | {{ expense.amount }}
-	| 
-	<a href="{% url 'purse:expenses_modify' pk=expense.pk %}">modify</a>
-	| 
-	<a href="{% url 'purse:expenses_delete' pk=expense.pk %}?next={% url 'purse:expenses' pk=purse.pk %}">delete</a>
+	<td class="table_date"><a href="{% url 'purse:expenses_modify' pk=expense.pk %}">{{ expense.date|date:'D d/M' }}</a></td>
+	<td class="table_wording"><a href="{% url 'purse:expenses_modify' pk=expense.pk %}">{{ expense.wording }}</a></td>
+	<td class="table_sum"><a href="{% url 'purse:expenses_modify' pk=expense.pk %}">{{ expense.amount }}</a></td>
+	<td class="table_option"><a href="{% url 'purse:expenses_delete' pk=expense.pk %}?next={% url 'purse:expenses' pk=purse.pk %}">
+	<img class="icons" src="{% static '/purse/images/i-delete.png' %}" alt=""></a>
 	{% if expense.image %}
-	<a href="{% url 'purse:expenses_image' pk=expense.pk %}">(IMAGE)</a>
+	<a href="{% url 'purse:expenses_image' pk=expense.pk %}"><img class="icons" src="{% static 'purse/images/i-image.png' %}" alt="" ></a>
 	{% endif %}
-	</li>
+	</td>
 	{% endif %}
 	
 	{% if expense.exported and purse.showexported %}
-	<li class="exported_{{ expense.exported }}" >
-	{{ expense.date|date:'Y-m-d D' }} | {{ expense.wording }} | {{ expense.amount }}
+	<td class="table_date">{{ expense.date|date:'D d/M' }}</td>
+	<td class="table_wording">{{ expense.wording }}</td>
+	<td class="table_sum">{{ expense.amount }}</td>
+	<td class="table_option">
 	{% if expense.image %}
-	 (IMAGE)
+	<a href="{% url 'purse:expenses_image' pk=expense.pk %}"><img class="icons" src="{% static 'purse/images/i-image.png' %}" alt="" ></a>
 	{% endif %}
-	</li>
-	{% endif %}	
+	</td>
+	{% endif %}
+	</tr>
 {% endfor %}
-</ul>
-<a href="{% url 'purse:expenses_export' pk=purse.pk %}">Export expenses to CSV</a>
+</table>
+
+<p><a href="{% url 'purse:expenses_export' pk=purse.pk %}">Export expenses to CSV</a></p>
 {% endif %}
 
 </div>

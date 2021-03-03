@@ -2,14 +2,16 @@
 {% load static %}
 {% block contenido %}
 
-<div style="background :{{ expense.account.color }}">
-<h1>Modify your expense</h1>
+<div class="addexpenses" style="background :{{ expense.account.color }}">
+<h2>Modify your expense</h2>
 	<form method="post" enctype="multipart/form-data" action="{% url 'purse:expenses_modify' pk=expense.pk %}">
 		{% csrf_token %}
 		{{ form.as_p }}
 		<p><label>This transaction is positive <input class="forms_checkbox" type="checkbox" name="positive" value="positive" /></label></p>
+		<p>		
 		<input type="submit" value="Save"/>
 		<input type="button" value="Back" onclick="javascript: history.go(-1)" />
+		</p>
 	</form>
 </div>
 {% endblock %}

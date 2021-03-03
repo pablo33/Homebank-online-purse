@@ -2,12 +2,15 @@
 {% load static %}
 {% block contenido %}
 
-<h1>Modify your purse</h1>
+<div class="addexpenses">
+<h2>Modify your purse</h2>
 	<form method="post" action="{% url 'purse:modify_purse' pk=purse.pk %}">
 		{% csrf_token %}
 		{{ form.as_p }}
+		<p>
 		<input type="submit" value="Save"/>
 		<input type="button" value="Back" onclick="javascript: history.go(-1)" />
+		</p>
 	</form>
-
+</div>
 {% endblock %}

@@ -3,32 +3,42 @@
 
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+   <link rel="icon" type="image/png" href="{% static 'purse/images/purseicon.png' %}" />
+
+	<link name="viewport" content="width-device-width, initial-scale=1.0" />
+	<link rel="stylesheet" type="text/css" href="{% static 'purse/css/purse.css' %}" />
+
 	<title>Homebank online purse</title>
 
 </head>
 
 
 <body>
-
-<nav class="main_nav">
-			<ul>
-				{% if user.is_authenticated %}
-				<li><a href="{% url 'purse:editdata_user' pk=user.pk %}">{{ user }}</a></li>
-				<li><a href="{% url 'purse:logout_user' %}">Close session</a></li>
-				{% else %}
-				<li><a href="{% url 'purse:login_user' %}{% if next %}?next={{ next }}{% endif %}">Log in</a></li>
-				<li><a href="{% url 'purse:signup_user' %}">Sign up</a></li>
-				<li><a href="{% url 'purse:sendmypassw' %}">Restore my password</a></li>
-				{% endif %}		
-			</ul>
+<div class="title">
+<a href="">
+<h1>
+<img src="{% static 'purse/images/purseicon.png'%}" alt="Purse logo">
+HomeBank online Purse
+</h1>
+</a>
+</div>
+<nav class="main_nav user_options">
+		<ul>
+			{% if user.is_authenticated %}
+			<li><a href="{% url 'purse:editdata_user' pk=user.pk %}">{{ user }}</a></li>
+			<li><a href="{% url 'purse:logout_user' %}">Close session</a></li>
+			{% else %}
+			<li><a href="{% url 'purse:login_user' %}{% if next %}?next={{ next }}{% endif %}">Log in</a></li>
+			<li><a href="{% url 'purse:signup_user' %}">Sign up</a></li>
+			<li><a href="{% url 'purse:sendmypassw' %}">Restore my password</a></li>
+			{% endif %}		
+		</ul>
 </nav>
 
 	{% block contenido %}
 	{% endblock %}
 
-<div class="foot, foot_in_mini">
 	{% include 'purse/includes/foot.html'%}
-	</div>
 
 
 

@@ -2,27 +2,41 @@
 {% load static %}
 {% block contenido %}
 
-<h1>Export your expenses to CSV</h1>
-
+<div class="">
 <h2>Export information</h2>
 
 {% if count %}
 <p>There is {{count}} expenses to export</p>
-<ul>
-	{% for expense in expenses %}
-		<li>
-		{{ expense.date }} | {{ expense.wording }} | {{ expense.amount }}
-		</li>
-	{% endfor %}
-</ul>
-This expenses will be marked as exported, are you sure? 
+
+
+<table>
+{% for expense in expenses %}
+	<tr class="exported_{{ expense.exported }}">
+	<td class="table_date"><a href="{% url 'purse:expenses_modify' pk=expense.pk %}">{{ expense.date|date:'D d/M' }}</a></td>
+	<td class="table_wording"><a href="{% url 'purse:expenses_modify' pk=expense.pk %}">{{ expense.wording }}</a></td>
+	<td class="table_sum"><a href="{% url 'purse:expenses_modify' pk=expense.pk %}">{{ expense.amount }}</a></td>
+	<td class="table_option"><a href="{% url 'purse:expenses_delete' pk=expense.pk %}?next={% url 'purse:expenses' pk=purse.pk %}">
+	<img class="icons" src="{% static '/purse/images/i-delete.png' %}" alt=""></a>
+	{% if expense.image %}
+	<a href="{% url 'purse:expenses_image' pk=expense.pk %}"><img class="icons" src="{% static 'purse/images/i-image.png' %}" alt="" ></a>
+	{% endif %}
+	</td>
+	</tr>
+{% endfor %}
+</table>
+
+
+<p>This expenses will be marked as exported, are you sure?</p> 
+
 	<form method="post" action="{% url 'purse:expenses_export' pk=purse.pk %}">
 		{% csrf_token %}
 		<!-- {{ form.as_p }} -->
+		<p>
 		<input type="submit" value="Yes, give me my data"/>
 		<input type="button" value="Not yet" onclick="javascript: history.go(-1)" />
+		</p>
 	</form>
-<p><a href="{% url 'purse:expenses' pk=purse.pk%}">Done!</a></p>
+<p><a href="{% url 'purse:expenses' pk=purse.pk%}">Press here when your're done!</a></p>
 {% else %}	
 <p>There is no expenses to export</p>
 <a href="{% url 'purse:welcome' %}" >OK</a>

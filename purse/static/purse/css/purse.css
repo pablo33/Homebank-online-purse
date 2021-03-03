@@ -1,0 +1,222 @@
+body {
+	font-size: 2.5em;
+	background: #d58f5a;
+	margin: 0px;
+	}
+
+p {
+	margin-left: 5%;
+	}
+
+.resalt {
+	background-color: #ccc;
+	font-weight: bold;
+	margin-left: 0px;
+	padding-left: 5%;
+	padding-top: 5px;
+	padding-bottom: 5px;
+	}
+
+div h1 {
+	color: #000;
+	text-align: center;
+	margin-top: 20px;
+	font-size: 1.5em;
+	}
+
+div h2 {
+	text-align: center;
+	margin-top: 0px;
+	}
+
+.title {
+	background : #804520;
+	color: #ffa;
+	margin-top: 0px;
+
+	}
+
+.title img {
+	width: 60px ;
+	}
+
+.title h1 {
+	font-size: 1.5em;
+	text-align: center;
+	margin-top: 0px;
+	}	
+
+.welcomepage img {
+	height: 70px;
+	}
+
+.main_nav {
+	background:#d58f5a;
+	color: #000;
+	}
+
+.user_options ul {
+    display: inline-block;
+    text-align: left;
+    padding-right: 0px;
+    padding-left: 0px;
+    padding-bottom: 0px;
+    padding-top: 0px;
+    margin: 0px;
+}
+
+.user_options li {
+    list-style-type: none;
+    display: inline;
+    padding-right: 10px;
+    padding-left: 10px;
+}
+
+
+.page_options ul {
+    display: list-item;
+    width: 100%;
+    background: #bb7b4a;
+    text-align: left;
+    padding-right: 0px;
+    padding-left: 0px;
+    padding-bottom: 10px;
+    padding-top: 10px;
+    margin: 0px;
+	}
+
+.page_options li {
+    list-style-type: none;
+    display: inline-block;
+    padding-right: 10px;
+    padding-left: 10px;
+}
+
+.exported_True {
+	color: #888;
+	}
+
+.foot {
+	font-size: 0.5em;
+	background: #bb7b4a;
+	}
+	
+/* general links */
+
+a:link {
+	color: #000;
+	text-decoration: none;
+	}
+
+a:visited {
+	color: #000;
+	text-decoration: none;
+	}
+
+a:active {
+	color: #ffa;
+	/* text-decoration: none; */
+	}
+
+a:hover {
+	color: #ffa;
+	/* text-decoration: none; */
+	text-decoration: none;
+	}
+
+
+/* Purses List */
+.purseslist h1 {
+	text-align: center;
+	font-size: 1.5em;
+	margin: 0px;
+	margin-top: 0.5em;
+	}
+
+.purseslist hr {
+	width: 70%;
+	color: #fff;
+	}
+
+table {
+	width: 95%;
+	margin: 5%;
+	}
+
+.table_date {
+	font-size: 0.75em;
+	width: min-content;
+	padding-right: 0px;
+	}
+
+.table_wording {
+	border-bottom-width: thick;
+	border-bottom-style: solid;
+	border-color: #ffe724;	
+	}
+
+
+.table_option {
+	width: 150px;
+	text-align: left;
+	}
+
+.table_sum {
+	width: 200px;
+	text-align: right;
+	}
+
+/* Icons */
+.icons {
+	width: 40px;
+	margin: 0px;
+	margin-left: 10px;
+	margin-right: 10px;
+	}
+
+
+
+/* Forms */
+input[type=submit],
+input[type=button],
+input[type=text], 
+input[type=password],
+input[type=email],
+input[type=file],
+input[type=number],
+select,
+textarea
+ {
+	font-size: inherit;
+	color: #333;
+	width: 90%;
+	margin-bottom: 10px;
+	margin-top: 10px;
+	padding: 5px;
+	}
+
+input[type=number], #id_wording {
+	font-size: 1.5em;
+	}
+
+input[type=submit],
+input[type=number],
+input[type=button] {
+	height: 1.5em;
+	text-align: center;
+	width: 90%;
+	display: inline-block;
+	}
+
+input[type=checkbox] {
+	transform: scale(1.5); /* General */
+	display: inline;
+	width: auto;
+	-moz-transform: scale(2.5);
+	-ms-transform: scale(2.5); /* IE */
+	-moz-transform: scale(2.5); /* FF */
+	-webkit-transform: scale(2.5); /* Safari y Chrome */
+	-o-transform: scale(2.5); /* Opera */
+	padding: 10px;
+	margin-left: 5%;
+	}

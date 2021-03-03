@@ -9,15 +9,16 @@
 		<p><label>Last name <input type="text" name="last_name" value="{{ user.last_name }}" required /></label></p>
 		<p><label>e-mail <input type="text" name="email" value="{{ user.email }}" required /></label></p>
 		<p><label>Show inactive purses <input class="forms_checkbox" type="checkbox" name="showinactive" value="showinactive" {% if userconfig.showinactive %}checked="checked"{% endif %} /></label></p>
-
-		<input type="submit" value="Send changes" />
+		<p><input type="submit" value="Send changes" /></p>
 	</form>
 		<h3>Other actions</h3>
 	<p>
 	<form method="redirect" action="{% url 'purse:changepass_user' pk=user.pk %}">
 		{% csrf_token %}
+		<p>
 		<input type="submit" value="Change your password"/>
 		<input type="button" value="Back" onclick="javascript: history.go(-1)" />
+		</p>
 	</form>
 	</p>
 	</div>

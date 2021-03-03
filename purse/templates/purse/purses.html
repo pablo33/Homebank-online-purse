@@ -1,22 +1,23 @@
 {% extends 'purse/base.html' %}
 {% load static %}
 {% block contenido %}
-
+<div class="purseslist">
 <h1>YOUR PURSES</h1>
-
-<h2>manage your purses</h2>
-<p>here is list of purses to work with</p>
-<ul>
+<hr>
+<p>Here is list of purses to work with</p>
+<table>
 	{% for purse in purses %}
-	<li> <a href="{% url 'purse:expenses' pk=purse.pk %}" > {{ purse.name }} | {{ purse.cuantity }}{{ purse.currency }}</a>
-	|
-	<a href="{% url 'purse:modify_purse' pk=purse.pk %}"> config {%if not purse.active %} (Inactive) {% endif %}</a></li>
+	<tr>
+		<td><a href="{% url 'purse:expenses' pk=purse.pk %}" >{{ purse.name }}</a></td>
+		<td class="table_sum"   >{{ purse.cuantity }}{{ purse.currency }}</td>
+		<td class="table_option"><a href="{% url 'purse:modify_purse' pk=purse.pk %}"><img class="icons" src="{% static '/purse/images/i-modify.png' %}" alt="">{%if not purse.active %}<img class="icons" src="{% static 'purse/images/i-inactive.png' %}" alt="">{% endif %}</a></td>
+	</tr>
 	{% endfor %}
-</ul>
+</table>
 
 
 <p><a href="{% url 'purse:add_new_purse' %}">Add a new purse</a></p>
-
+</div>
 
 
 {% endblock %}
