@@ -169,7 +169,7 @@ def update_account (account):
 
 def remove_expense (expense):
 	if expense.image != "":
-		os.remove (settings.BASE_DIR + expense.image.url)
+		delete_media (expense.image.url)
 	expense.delete()
 	return
 
@@ -193,8 +193,9 @@ def cleanmyfile (oldimage,imgfield ):
 			return True
 		else:
 			if (os.path.basename(oldimage) != os.path.basename(imgfield.url)) or os.path.basename(imgfield.url).startswith(oldimage):
-				if itemcheck (targetfile) == 'file':
-					os.remove (settings.BASE_DIR + oldimage)
+				delete_media (oldimage)
+				##if itemcheck (targetfile) == 'file':
+				##	os.remove (settings.BASE_DIR + oldimage)
 				return True
 	return False
 
@@ -225,22 +226,37 @@ def resize_image (imagepath, max_size):
 	img = img.resize (( width, height ))
 	img.mode = 'RGB'
 	newimagepath = os.path.splitext(imagepath)[0] + '.jpg'
-	if itemcheck (newimagepath) == 'file':
-		newimagepath = Nextfilenumber (newimagepath)
+	#if itemcheck (newimagepath) == 'file':
+	#	newimagepath = Nextfilenumber (newimagepath)
 	img.save(newimagepath)
 	if imagepath != newimagepath and itemcheck (imagepath) == 'file':
 		os.remove (imagepath)
 	return newimagepath
 
+def rename_image (imagepath, pk):
+	filename = os.path.basename (imagepath)
+	extension = os.path.splitext (imagepath)[1]
+	newimagepath = os.path.join( os.path.dirname(imagepath), str(pk) + extension)
+	return newimagepath
+
 def normalize_image (expense):
 	if expense.image:
-		imagepath = settings.BASE_DIR + expense.image.url
-		newimagepath = resize_image (imagepath, 800)
+		imagepath = settings.BASE_DIR + expense.image.url 	#Existent file now is "imagepath"
+		newimagepath1 = resize_image (imagepath, 800)		#Existent file now is "imagepath1"
+		newimagepath = rename_image (newimagepath1, expense.pk)	#file has been renamed to "newimagepath"
 		if newimagepath != imagepath:
 			expense.image = newimagepath [len(settings.MEDIA_ROOT)+1:]
+			os.rename (newimagepath1, newimagepath)
 			expense.save()
 			return True
 	return None
+
+def delete_media (projectpath):
+	filepath = settings.BASE_DIR + projectpath
+	if itemcheck (filepath) == 'file':
+		os.remove (filepath)
+	return True
+
 
 def makecsv (expenseslist):
 	output = 'date;paymode;info;payee;wording;amount;category;tags\n'
@@ -451,6 +467,11 @@ def expenses_image (request, pk):
 		return redirect ('purse:login_user')
 	if request.user != expense.user:
 		return redirect ('purse:welcome')
+	if request.method == "POST":
+		delete_media (expense.image.url)
+		expense.image = None
+		expense.save()
+		return redirect ('purse:expenses', pk=expense.account.pk)
 	context = {	'expense' : expense,}
 	context.update (basecontext (request) )
 	return render (request, 'purse/showimage.html', context)

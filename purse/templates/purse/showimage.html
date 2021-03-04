@@ -1,13 +1,36 @@
 {% extends 'purse/base.html' %}
 {% load static %}
 {% block contenido %}
-
+<div class="">
 <h2>Image for the expense</h2>
 <p>
-<img src="{{ expense.image.url }}">
+<a href="{{ expense.image.url }}" ><img src="{{ expense.image.url }}"></a>
 </p>
+
+<table>
+	<tr class="exported_{{ expense.exported }}">
+	<td class="table_date"><a href="{% url 'purse:expenses_modify' pk=expense.pk %}">{{ expense.date|date:'D d/M' }}</a></td>
+	<td class="table_wording"><a href="{% url 'purse:expenses_modify' pk=expense.pk %}">{{ expense.wording }}</a></td>
+	<td class="table_sum"><a href="{% url 'purse:expenses_modify' pk=expense.pk %}">{{ expense.amount }}</a></td>
+	<td class="table_option"><a href="{% url 'purse:expenses_delete' pk=expense.pk %}?next={% url 'purse:welcome' %}">
+	<img class="icons" src="{% static '/purse/images/i-delete.png' %}" alt=""></a>
+	{% if expense.image %}
+	<a href="{% url 'purse:expenses_image' pk=expense.pk %}"><img class="icons" src="{% static 'purse/images/i-image.png' %}" alt="" ></a>
+	{% endif %}
+	</td>
+	</tr>
+</table>
+<p>
+	<form method="post" action="{% url 'purse:expenses_image' pk=expense.pk %}">
+		{% csrf_token %}
+	<!-- {{ form.as_p }} -->	
+	<input type="submit" value="Delete Image" />
+	</form>
+</p>
+<br>
 <p>
 <input type="button" value="Back" onclick="javascript: history.go(-1)" />
 </p>
+</div>
 
 {% endblock %}
