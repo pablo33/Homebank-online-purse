@@ -6,7 +6,7 @@
 <h2>Export information</h2>
 
 {% if count %}
-<p>There is {{count}} expenses to export</p>
+<p>There is {{count}} expenses to export in {{ purse.name }} purse.</p>
 
 
 <table>
@@ -25,8 +25,7 @@
 {% endfor %}
 </table>
 
-
-<p>This expenses will be marked as exported, are you sure?</p> 
+<p>Are you ready to get your CSV file?</p>
 
 	<form method="post" action="{% url 'purse:expenses_export' pk=purse.pk %}">
 		{% csrf_token %}
@@ -36,8 +35,9 @@
 		<input type="button" value="Not yet" onclick="javascript: history.go(-1)" />
 		</p>
 	</form>
-<p><a href="{% url 'purse:expenses' pk=purse.pk%}">Press here when your're done!</a></p>
-{% else %}	
+
+<p><a href="{% url 'purse:expenses_mark' pk=purse.pk%}">This expenses won't be marked as exported, untill you press here. So be sure you have your CSV file and press here to mark all expenses as exported.</a></p>
+{% else %}
 <p>There is no expenses to export</p>
 <a href="{% url 'purse:welcome' %}" >OK</a>
 

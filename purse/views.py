@@ -3,8 +3,8 @@ from PIL import Image
 from datetime import timedelta
 from .models import Account, Expense, VisitCounter, UserConfig
 from .forms import SignUpForm, PasschForm, PurseForm, ExpenseForm
-from hbpurse import settings
-#from proyectos33 import settings
+#from hbpurse import settings
+from proyectos33 import settings
 from django.shortcuts import render, HttpResponse, redirect
 from django.utils import timezone
 from django.utils.http import urlsafe_base64_encode
@@ -411,7 +411,6 @@ def expenses_modify (request, pk):
 	return render (request, 'purse/modify_expense.html', context)
 
 def expenses_delete (request, pk):
-	next = request.GET.get('next', False)
 	try:
 		expense = Expense.objects.get(pk = pk)
 	except:
@@ -420,17 +419,17 @@ def expenses_delete (request, pk):
 		return redirect ('purse:login_user')
 	if request.user != expense.account.user:
 		return redirect ('purse:welcome')
-	remove_expense (expense)
-	update_account (expense.account)
-	#if expense.image != "":
-	#	os.remove (settings.BASE_DIR + expense.image.url)
+	if request.method == 'POST':
+		remove_expense (expense)
+		update_account (expense.account)
+		#if expense.image != "":
+		#	os.remove (settings.BASE_DIR + expense.image.url)
+		return redirect ('purse:expenses', pk=expense.account.pk)
 	context = {
-			'title'	: 'Expense deleted',
-			'msg' 	: 'The expense has been deleted',
-			'next'	: next,
+			'expense'	: expense,
 			}
 	context.update (basecontext (request) )
-	return render (request, 'purse/msgs/msgconfirm.html', context)
+	return render (request, 'purse/expenses_delete.html', context)
 
 def expenses_export(request, pk):
 	try:
@@ -451,12 +450,24 @@ def expenses_export(request, pk):
 		csvcontent = makecsv (expenseslist)
 		response = HttpResponse (csvcontent, content_type='text/csv')
 		response ['Content-Disposition'] = 'attachment; filename="%s.csv"'%purse.name
-		for e in expenseslist:
-			e.exported = True
-			e.save()
 		return response
-
 	return render (request, 'purse/expenses_export.html', context)
+
+def mark_exported (request, pk):
+	try:
+		purse = Account.objects.get(pk = pk)
+	except:
+		return redirect ('purse:welcome')
+	if not request.user.is_authenticated:
+		return redirect ('purse:login_user')
+	if request.user != purse.user:
+		return redirect ('purse:welcome')
+	expenseslist = Expense.objects.filter(account = pk, exported=False)
+	for e in expenseslist:
+		e.exported = True
+		e.save()
+	return redirect ('purse:expenses', pk=pk)
+
 
 def expenses_image (request, pk):
 	try:

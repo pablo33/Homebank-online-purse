@@ -2,15 +2,15 @@
 {% load static %}
 {% block contenido %}
 <div class="">
-<h2>Image for the expense</h2>
+<h2>Delete this expense?</h2>
 
 {% include 'purse/includes/expense_detail.html' %}
 
-	<form method="post" action="{% url 'purse:expenses_image' pk=expense.pk %}">
+	<form method="post" action="{% url 'purse:expenses_delete' pk=expense.pk %}">
 		{% csrf_token %}
 	<!-- {{ form.as_p }} -->	
 <p>
-	<input type="submit" value="Delete Image" />
+	<input type="submit" value="Delete Expense" />
 </p>
 	</form>
 <br>

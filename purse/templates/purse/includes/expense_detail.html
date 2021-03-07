@@ -1,0 +1,23 @@
+{% load static %}
+
+{% if expense.image %}
+<p>
+<a href="{{ expense.image.url }}" ><img src="{{ expense.image.url }}"></a>
+</p>
+{% endif %}
+
+<table>
+	<tr class="exported_{{ expense.exported }}">
+	<td class="table_date"><a href="{% url 'purse:expenses_modify' pk=expense.pk %}">{{ expense.date|date:'D d/M' }}</a></td>
+	<td class="table_wording"><a href="{% url 'purse:expenses_modify' pk=expense.pk %}">{{ expense.wording }}</a></td>
+	<td class="table_sum {% if expense.amount > 0 %}positive{% endif %}"><a href="{% url 'purse:expenses_modify' pk=expense.pk %}">{{ expense.amount }}</a></td>
+	<td class="table_option">
+	{% if not expense.exported %}
+	<a href="{% url 'purse:expenses_delete' pk=expense.pk %}">	<img class="icons" src="{% static '/purse/images/i-delete.png' %}" alt=""></a>
+	{% endif %}
+	{% if expense.image %}
+	<a href="{% url 'purse:expenses_image' pk=expense.pk %}"><img class="icons" src="{% static 'purse/images/i-image.png' %}" alt="" ></a>
+	{% endif %}
+	</td>
+	</tr>
+</table>

@@ -22,5 +22,6 @@ urlpatterns = [
 	path('expenses/modify/<int:pk>', 	views.expenses_modify, 		name='expenses_modify'),
 	path('expenses/delete/<int:pk>', 	views.expenses_delete, 		name='expenses_delete'),
 	path('expenses/export/<int:pk>', 	views.expenses_export, 		name='expenses_export'),
-    path('expenses/image/<int:pk>' , 	views.expenses_image, 		name='expenses_image'),
+	path('expenses/image/<int:pk>' , 	views.expenses_image, 		name='expenses_image'),
+	path('expenses/markexported/<int:pk>', views.mark_exported, 	name='expenses_mark'),
     ]
