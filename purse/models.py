@@ -1,8 +1,6 @@
 from django.db import models
 from django.contrib.auth.models import User
 from os.path import join
-from django.utils import timezone
-
 
 # Create your models here.
 MYAPPBASE_DIR = 'purse'
@@ -13,13 +11,12 @@ class Account (models.Model):
 	When there is a new user, a default account is oppened
 		"""
 	colorchoices = [
-		('#FAEBD7','AntiqueWhite'),
-		('#7FFFD4','Aquamarine'),
-		('#DEB887','BurlyWood'),
-		('#FF7F50','Coral'),
-		('#FF8C00','DarkOrange'),
-		('#FFD700','Gold'),
-
+		('backg01','AntiqueWhite'),
+		('backg02','Aquamarine'),
+		('backg03','BurlyWood'),
+		('backg04','Coral'),
+		('backg05','DarkOrange'),
+		('backg06','Gold'),
 		]
 
 	user 	= models.ForeignKey ('auth.User', on_delete=models.CASCADE, blank=False, null=False)		# related User object
@@ -61,7 +58,7 @@ class Expense (models.Model):
 	user 	= models.ForeignKey ('auth.User', on_delete=models.CASCADE)
 	account	= models.ForeignKey ('Account', on_delete=models.CASCADE, blank=False, null=False)
 	exported = models.BooleanField ('exported', default=False)
-	date 	= models.DateField ('Date', null=False, default=timezone.now() )
+	date 	= models.DateField ('Date', null=False, blank=False)
 	paymode = models.PositiveIntegerField ('paymode', choices=paymodechoice, default=3)
 	info	= models.CharField ('info', max_length=15, default="", blank=True)
 	payee	= models.CharField ('payee', max_length=20, default="", blank=True)
