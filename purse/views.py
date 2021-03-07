@@ -3,8 +3,7 @@ from PIL import Image
 from datetime import timedelta
 from .models import Account, Expense, VisitCounter, UserConfig
 from .forms import SignUpForm, PasschForm, PurseForm, ExpenseForm
-#from hbpurse import settings
-from proyectos33 import settings
+from hbpurse import settings
 from django.shortcuts import render, HttpResponse, redirect
 from django.utils import timezone
 from django.utils.http import urlsafe_base64_encode
@@ -329,7 +328,7 @@ def modify_purse (request, pk):
 			account.user = request.user
 			account.save ()
 			update_account (account)
-		return redirect ('purse:welcome')
+		return redirect ('purse:expenses', pk=pk)
 	form = PurseForm (instance=account)
 	context = { 'form' : form,
 				'purse': account,
@@ -440,7 +439,7 @@ def expenses_export(request, pk):
 		return redirect ('purse:login_user')
 	if request.user != purse.user:
 		return redirect ('purse:welcome')
-	expenseslist = Expense.objects.filter(account = pk, exported=False)
+	expenseslist = Expense.objects.filter(account = pk, exported=False).order_by ('-date', '-id')
 	context = { 'expenses'	: expenseslist,
 				'count'		: len (expenseslist),
 				'purse'		: Account.objects.get(pk=pk),
