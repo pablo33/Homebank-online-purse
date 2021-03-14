@@ -1,26 +1,34 @@
 {% extends 'purse/base.html' %}
 {% load static %}
+
+{% load i18n %}
+
+{% get_current_language as LANGUAGE_CODE %}
+{% get_language_info for LANGUAGE_CODE as lang %}
+
+
 {% block contenido %}
-<p>
+<p></p>
 <div class="page_options">
 <ul>
-	<li>This purse: 
-	<li><a href="{% url 'purse:modify_purse' pk=purse.pk%}">Config</a></li>
-	<li><a href="{% url 'purse:welcome' %}?next=purses">Close</a></li>
+	<li>{% trans 'This purse' %}: 
+	<li><a href="{% url 'purse:modify_purse' pk=purse.pk%}">{% trans 'Config' %}</a></li>
+	<li><a href="{% url 'purse:welcome' %}?next=purses">{% trans 'Close' %}</a></li>
 </ul>
 </div>
-<div class="addexpenses {{purse.color}}"> <!-- {{ purse.color }} /-->
-<h2>Expenses for {{ purse.name }}</h2>
+<div class="addexpenses {{purse.color}}">
+{# Translators: pname is the name of the purse #}
+<h2>{% blocktrans with pname=purse.name %}Expenses for {{ pname }}{% endblocktrans %}</h2>
 	<form method="post" enctype="multipart/form-data" action="{% url 'purse:expenses' pk=purse.pk%}">
 		{% csrf_token %}
 		{{ form.as_p }}
-		<p><label>This transaction is positive <input class="forms_checkbox" type="checkbox" name="positive" value="positive" /></label></p>
-		<p><input type="submit" value="Add expense"/></p>
+		<p><label>{% trans 'This transaction is positive' %} <input class="forms_checkbox" type="checkbox" name="positive" value="positive" /></label></p>
+		<p><input type="submit" value="{% trans 'Add expense' %}"/></p>
 	</form>
-<p class="resalt">Your purse balance is {{ purse.cuantity }} {{ purse.currency }}</p>
+<p class="resalt">{% blocktrans with cuantity=purse.cuantity currency=purse.currency %}Your purse balance is {{ cuantity }} {{ currency }}{% endblocktrans %}</p>
 {% if purse.showexported and count %}
 <p class="exported_True">
-Showing exported expenses
+{% trans 'Showing exported expenses' %}
 </p>
 {% endif %}
 
@@ -55,7 +63,7 @@ Showing exported expenses
 {% endfor %}
 </table>
 
-<p><a href="{% url 'purse:expenses_export' pk=purse.pk %}">Export expenses to CSV</a></p>
+<p><a href="{% url 'purse:expenses_export' pk=purse.pk %}">{% trans 'Export expenses to CSV' %}</a></p>
 {% endif %}
 
 </div>

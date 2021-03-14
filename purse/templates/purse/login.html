@@ -1,14 +1,15 @@
 {% extends 'purse/base.html' %}
+{% load i18n %}
 
 {% block contenido %}
 	<div>
-	<h2>Log In</h2>
+	<h2>{% trans "Log In" %}</h2>
 		<form method="post" action="{% url 'purse:login_user' %}">
 			{% csrf_token %}
-			<p><label>User <input type="text" name="user" value="{{ user }}" required="required" autofocus="autofocus" /></label></p>
-			<p><label>Password <input type="password" name="password" required /></label></p>
+			<p><label>{% trans "User" %} <input type="text" name="user" value="{{ user }}" required="required" autofocus="autofocus" /></label></p>
+			<p><label>{% trans "Password" %} <input type="password" name="password" required /></label></p>
 			<p><input type="hidden" name="next" value="{{ next }}" id="next"/></p>
-			<p><input type="submit" value="Login" /></p>
+			<p><input type="submit" value="{% trans 'Login' %}" /></p>
 		</form>
 	</div>
 {% endblock %}

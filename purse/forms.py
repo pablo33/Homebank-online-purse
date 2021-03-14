@@ -3,6 +3,7 @@ from django.contrib.auth.forms import UserCreationForm
 from django.contrib.auth.models import User
 from django.utils import timezone
 from .models import Account, Expense
+from django.utils.translation import gettext_lazy as _
 
 
 class SignUpForm (UserCreationForm):
@@ -34,7 +35,7 @@ class PurseForm (forms.ModelForm):
 		fields = ('name','color','adjustment', 'active', 'currency', 'showexported')
 
 class ExpenseForm (forms.ModelForm):
-	date 	= forms.DateField (required = True, initial=timezone.now)
+	date 	= forms.DateField ( label= _('Date'), required = True, initial=timezone.now)
 	class Meta:
 		model = Expense
 		fields = (

@@ -4,6 +4,7 @@ from datetime import timedelta
 from .models import Account, Expense, VisitCounter, UserConfig
 from .forms import SignUpForm, PasschForm, PurseForm, ExpenseForm
 from hbpurse import settings
+#from proyectos33 import settings
 from django.shortcuts import render, HttpResponse, redirect
 from django.utils import timezone
 from django.utils.http import urlsafe_base64_encode
@@ -15,6 +16,8 @@ from django.core.mail import send_mail
 from django.core.validators import validate_email
 from django.template.loader import get_template
 from django.db.models import Sum, Count
+
+from django.utils.translation import gettext as _
 
 # ------------------------ Utils --------------------------------------------
 
@@ -502,8 +505,8 @@ def login_user (request):
 				return redirect (next)
 		else:
 			context = {
-				'title'	: 'Login',
-				'msg' 	: 'Usuario o contraseña incorrecta.',
+				'title'	: _('Login'),
+				'msg' 	: _('User or password incorrect.'),
 				'back' 	: True,
 				}
 			context.update (basecontext (request) )
@@ -534,8 +537,8 @@ def SignUpView (request):
 		form = SignUpForm(request.POST)
 		username = request.POST ['username']
 		if len (User.objects.filter (username=username)) >= 1:
-			context = { 'title'	: 'Sign up yourself',
-						'msg' 	: 'User already exists.',
+			context = { 'title'	: _('Sign up yourself'),
+						'msg' 	: _('User already exists.'),
 						'back' 	: True,
 						}
 			context.update (basecontext (request) )
@@ -544,12 +547,12 @@ def SignUpView (request):
 		try:
 			validate_email (email)
 		except :
-			return HttpResponse ('Sign up with a valid e-mail: <strong>%s</strong>'%email)
+			return HttpResponse (_('Sign up with a valid e-mail:%(email)s)') % {'email':email})
 		password  = request.POST ['password1']
 		password2 = request.POST ['password2']
 		if password != password2:
-			context = {	'title'	: 'Sign up yourself',
-						'msg' 	: 'Passwords does not match.',
+			context = {	'title'	: _('Sign up yourself'),
+						'msg' 	: _('Passwords does not match.'),
 						'back' 	: True,
 						}
 			context.update (basecontext (request) )
@@ -564,9 +567,9 @@ def SignUpView (request):
 			create_purse (user)
 			adduserdefaults (user)
 			send_user_mail (	recipients = 	email,
-								title = 		'¡Welcome to your Homebank online Purse!',
+								title = 		_('¡Welcome to your Homebank online Purse!'),
 								template = 		'purse/mails/welcome_user.html',
-								txtcontent = 	'%s welcome to your Homebank online Purse.'%username,
+								txtcontent = 	_('%(username)s welcome to your Homebank online Purse.')% {'username': username},
 								templatecontext = {
 													'domain'	:	settings.TEMPLATE_DOMAIN,
 													'user'		:	user,
@@ -575,15 +578,15 @@ def SignUpView (request):
 								)
 			return redirect ('purse:welcome')
 		else:
-			context = {	'title'	: 'Sign up yourself',
-						'msg' 	: 'Some fields where incorrect.',
+			context = {	'title'	: _('Sign up yourself'),
+						'msg' 	: _('Some fields where incorrect.'),
 						'back' 	: True,
 						}
 			context.update (basecontext (request) )
 			return render (request, 'purse/msgs/msgconfirm.html', context)
 	form = SignUpForm
 	context = {	'form': form,
-				'head': "Sign up yourself",
+				'head': _('Sign up yourself'),
 				}
 	context.update (basecontext (request) )
 	return render (request, 'purse/singup.html', context)
@@ -617,16 +620,16 @@ def editdata_user (request, pk):
 		try:
 			validate_email (email)
 		except:
-			context = {	'title'	: 'Edit your data',
-						'msg' 	: 'Please, set a valid e-mail',
+			context = {	'title'	: _('Edit your data'),
+						'msg' 	: _('Please, set a valid e-mail'),
 						'back' 	: True,
 						}
 			context.update (basecontext (request) )
 			return render (request, 'purse/msgs/msgconfirm.html', context )
 		userdata.email = request.POST ['email']
 		userdata.save()
-		context = { 'title'	: 'Edit your data',
-					'msg' 	: 'Your data has been stored',
+		context = { 'title'	: _('Edit your data'),
+					'msg' 	: _('Your data has been stored'),
 					'ppal'	: True,
 					}
 		context.update (basecontext (request) )
@@ -655,8 +658,8 @@ def changepass_user (request, pk):
 		user.set_password (password)
 		user.save()
 		login(request, user)
-		context = {	'title'	: 'Change your password',
-					'msg' 	: 'Your password has changed',
+		context = {	'title'	: _('Change your password'),
+					'msg' 	: _('Your password has changed'),
 					'ppal'	: True,
 					}
 		context.update (basecontext (request) )
@@ -664,7 +667,7 @@ def changepass_user (request, pk):
 
 	form = PasschForm (instance = request.user)
 	context = {	'form' : form,
-				'head' : "Enter a new password"
+				'head' : _('Enter a new password'),
 				}
 	context.update (basecontext (request) )
 	return render (request, 'purse/singup.html', context)
@@ -680,8 +683,8 @@ def resetmypassw (request):
 		try:
 			user = User.objects.get(email = email, username = username)
 		except:
-			context = {	'title'	: 'Reset your password',
-						'msg' 	: 'There is not user with this data',
+			context = {	'title'	: _('Reset your password'),
+						'msg' 	: _('There is not user with this data'),
 						'back'	: True,
 						}
 			context.update (basecontext (request) )
@@ -689,9 +692,9 @@ def resetmypassw (request):
 		uid = urlsafe_base64_encode(force_bytes(user.pk))
 		token = default_token_generator.make_token(user)
 		send_user_mail (	recipients = 	user.email,
-							title = 		'Password restore',
+							title = 		_('Password restore'),
 							template = 		'purse/mails/password_reset.html',
-							txtcontent = 	'%s, there is one little step to reset your password.'%username,
+							txtcontent = 	_('%(username)s, there is one little step to reset your password.')%{'username', username},
 							templatecontext = {
 												'domain'	:	settings.TEMPLATE_DOMAIN,
 												'user'		:	user,
@@ -699,8 +702,8 @@ def resetmypassw (request):
 												'token'		:	token,
 												}
 							)
-		context = {	'title'	: 'Password reset',
-					'msg' 	: 'an e-mail has been send to reset your password',
+		context = {	'title'	: _('Password reset'),
+					'msg' 	: _('an e-mail has been send to reset your password'),
 					'ppal' 	: True,
 					}
 		context.update (basecontext (request) )
@@ -714,7 +717,7 @@ def resetconfirm (request, uidb64, token):
 		password  = request.POST ['password1']
 		password2 = request.POST ['password2']
 		if password != password2:
-			return HttpResponse ('passwords did not match')
+			return HttpResponse (_('passwords did not match'))
 		for user in User.objects.all():
 			if default_token_generator.check_token(user, token):
 				break
@@ -722,16 +725,15 @@ def resetconfirm (request, uidb64, token):
 		user.save()
 
 		login(request, user)
-		context = { 'title'	: 'Set your password',
-					'msg' 	: 'Your new password has been stored',
+		context = { 'title'	: _('Set your password'),
+					'msg' 	: _('Your new password has been stored'),
 					'ppal'	: True,
 					}
 		context.update (basecontext (request) )
 		return render (request, 'purse/msgs/msgconfirm.html', context)
 	form = PasschForm ()
 	context = {	'form' : form,
-				'head' : "Set your new password"
+				'head' : _('Set your new password')
 				}
 	context.update (basecontext (request) )
 	return render (request, 'purse/singup.html', context)
-		

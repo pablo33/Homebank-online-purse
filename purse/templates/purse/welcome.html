@@ -1,18 +1,19 @@
 {% extends 'purse/base.html' %}
 {% load static %}
+{% load i18n %}
 {% block contenido %}
 
 <div class="welcomepage">
-<h1>Welcome to your HomeBank online Purse</h1>
-<p>This app will help you annotate your daily expenses and export them to your HomeBank application. You can read more on its page.</p>
+<h1>{% trans "Welcome to your HomeBank online Purse" %}</h1>
+<p>{% trans "This app will help you annotate your daily expenses and export them to your HomeBank application. You can read more on its page." %}</p>
 <p><a href="http://homebank.free.fr/en/" ><img src="http://homebank.free.fr/img/homebank-logo.svg" alt=""></a></p>
-<p>Write down, easy and fast, your daily expenses and export them periodically into your HomeBank account via CSV file.
-<br>That's it.</p>
+<p>{% trans "Write down, easy and fast, your daily expenses and export them periodically into your HomeBank account via CSV file." %}
+<br>{% trans "That's it." %}</p>
 
-<p>This is my personal home service, but you are welcome to try it or even using it if you want.<br></p>
+<p>{% trans "This is my personal home service, but you are welcome to try it or even using it if you want." %}<br></p>
 
-<p>Want to try or have your personal service?<br>
-In this case, don't forget having a look to the development page:</p>
+<p>{% trans "Want to try or have your personal service?" %}<br>
+{% trans "In this case, don't forget having a look to the development page:" %}</p>
 <p><a href="https://github.com/pablo33/Homebank-online-purse" >
 <img src="{% static 'purse/images/githubicon.png'%}" alt="github icon">
 </a></p>

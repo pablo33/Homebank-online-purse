@@ -1,16 +1,17 @@
 {% extends 'purse/base.html' %}
 {% load static %}
+{% load i18n %}
 {% block contenido %}
 
 <div class="addexpenses {{ expense.account.color }}">
-<h2>Modify your expense</h2>
+<h2>{% trans "Modify your expense" %}</h2>
 	<form method="post" enctype="multipart/form-data" action="{% url 'purse:expenses_modify' pk=expense.pk %}">
 		{% csrf_token %}
 		{{ form.as_p }}
-		<p><label>This transaction is positive <input class="forms_checkbox" type="checkbox" name="positive" value="positive" {% if expense.amount > 0 %} checked="checked" {% endif %}/></label></p>
+		<p><label>{% trans "This transaction is positive" %} <input class="forms_checkbox" type="checkbox" name="positive" value="positive" {% if expense.amount > 0 %} checked="checked" {% endif %}/></label></p>
 		<p>		
-		<input type="submit" value="Save"/>
-		<input type="button" value="Back" onclick="javascript: history.go(-1)" />
+		<input type="submit" value="{% trans "Save" %}"/>
+		<input type="button" value="{% trans "Back" %}" onclick="javascript: history.go(-1)" />
 		</p>
 	</form>
 </div>

@@ -1,8 +1,9 @@
 {% extends 'purse/base.html' %}
 {% load static %}
+{% load i18n %}
 {% block contenido %}
 <div class="">
-<h2>Image for the expense</h2>
+<h2>{% trans "Image for the expense" %}</h2>
 
 {% include 'purse/includes/expense_detail.html' %}
 
@@ -10,12 +11,12 @@
 		{% csrf_token %}
 	<!-- {{ form.as_p }} -->	
 <p>
-	<input type="submit" value="Delete Image" />
+	<input type="submit" value="{% trans "Delete Image"%} " />
 </p>
 	</form>
 <br>
 <p>
-<input type="button" value="Back" onclick="javascript: history.go(-1)" />
+<input type="button" value="{% trans "Back" %}" onclick="javascript: history.go(-1)" />
 </p>
 </div>
 

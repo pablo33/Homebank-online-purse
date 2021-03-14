@@ -1,10 +1,12 @@
 {% extends 'purse/base.html' %}
 {% load static %}
+{% load i18n %}
 {% block contenido %}
+
 <div class="purseslist">
-<h1>YOUR PURSES</h1>
+<h1>{% trans "YOUR PURSES" %}</h1>
 <hr>
-<p>Here is list of purses to work with</p>
+<p>{% trans "Here is list of purses to work with" %}</p>
 <table>
 	{% for purse in purses %}
 	<tr>
@@ -19,7 +21,7 @@
 <p>
 <a href="{% url 'purse:add_new_purse' %}">
 <img class="icons"  src="{% static 'purse/images/i-add.png' %}" alt="add icon">
-Add a new purse</a>
+{% trans "Add a new purse" %}</a>
 </p>
 </div>
 

@@ -1,0 +1,410 @@
+# SOME DESCRIPTIVE TITLE.
+# Copyright (C) YEAR THE PACKAGE'S COPYRIGHT HOLDER
+# This file is distributed under the same license as the PACKAGE package.
+# FIRST AUTHOR <EMAIL@ADDRESS>, YEAR.
+#
+#, fuzzy
+msgid ""
+msgstr ""
+"Project-Id-Version: PACKAGE VERSION\n"
+"Report-Msgid-Bugs-To: \n"
+"POT-Creation-Date: 2021-03-14 16:00+0100\n"
+"PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
+"Last-Translator: Pablo Casas <pablolabora@gmx.es>\n"
+"Language-Team: LANGUAGE <LL@li.org>\n"
+"Language: \n"
+"MIME-Version: 1.0\n"
+"Content-Type: text/plain; charset=UTF-8\n"
+"Content-Transfer-Encoding: 8bit\n"
+
+#: forms.py:38
+msgid "Date"
+msgstr "Fecha"
+
+#: models.py:24 templates/purse/editdata_user.html:9
+msgid "Name"
+msgstr "Nombre"
+
+#: models.py:24
+msgid "Purse/wallet name"
+msgstr "Nombre del monedero"
+
+#: models.py:25
+msgid "Color"
+msgstr "Color"
+
+#: models.py:26
+msgid "Adjustment"
+msgstr "Ajuste"
+
+#: models.py:27
+msgid "Active"
+msgstr "Activo"
+
+#: models.py:28
+msgid "Cuantity"
+msgstr "Cantidad"
+
+#: models.py:29
+msgid "Currency"
+msgstr "Moneda"
+
+#: models.py:30
+msgid "Show exported expenses"
+msgstr "Mostrar gastos exportados"
+
+#: models.py:63
+msgid "paymode"
+msgstr "método pago"
+
+#: models.py:64
+msgid "info"
+msgstr "información"
+
+#: models.py:65
+msgid "payee"
+msgstr "pagador"
+
+#: models.py:66
+msgid "wording"
+msgstr "descripción"
+
+#: models.py:67
+msgid "amount"
+msgstr "cantidad"
+
+#: models.py:68
+msgid "tags"
+msgstr "tags"
+
+#: models.py:69
+msgid "image"
+msgstr "imagen"
+
+#: models.py:88
+msgid "Activate to show inactive purses/wallets"
+msgstr "Activar para mostrar monederos inactivos"
+
+#: templates/purse/base.html:12 templates/purse/base.html:22
+msgid "Homebank online purse"
+msgstr "Monedero online para HomeBank"
+
+#: templates/purse/base.html:30
+msgid "Close session"
+msgstr "Cerrar sesión"
+
+#: templates/purse/base.html:32
+msgid "Log in"
+msgstr "Entrar"
+
+#: templates/purse/base.html:33
+msgid "Sign up"
+msgstr "Date de alta"
+
+#: templates/purse/base.html:34
+msgid "Restore my password"
+msgstr "Restarurar mi contraseña"
+
+#: templates/purse/editdata_user.html:6 views.py:623 views.py:631
+msgid "Edit your data"
+msgstr "Edita tus datos"
+
+#: templates/purse/editdata_user.html:10
+msgid "Last name"
+msgstr "Apellidos"
+
+#: templates/purse/editdata_user.html:11
+#: templates/purse/remembermypassword_user.html:11
+msgid "e-mail"
+msgstr "e-mail"
+
+#: templates/purse/editdata_user.html:12
+msgid "Show inactive purses"
+msgstr "Activar para mostrar monederos inactivos"
+
+#: templates/purse/editdata_user.html:13
+msgid "Send changes"
+msgstr "Guardar cambios"
+
+#: templates/purse/editdata_user.html:15
+msgid "Other actions"
+msgstr "Otras acciones"
+
+#: templates/purse/editdata_user.html:20 views.py:661
+msgid "Change your password"
+msgstr "Cambia tu contraseña"
+
+#: templates/purse/editdata_user.html:21 templates/purse/modify_expense.html:14
+#: templates/purse/modify_purse.html:13 templates/purse/new_purse.html:12
+#: templates/purse/remembermypassword_user.html:13
+#: templates/purse/showimage.html:19 templates/purse/singup.html:12
+msgid "Back"
+msgstr "Volver"
+
+#: templates/purse/expenses_add.html:14
+msgid "This purse"
+msgstr "Este mondedero"
+
+#: templates/purse/expenses_add.html:15
+msgid "Config"
+msgstr "Configuración"
+
+#: templates/purse/expenses_add.html:16
+msgid "Close"
+msgstr "Cerrar"
+
+#. Translators: pname is the name of the purse
+#: templates/purse/expenses_add.html:21
+#, python-format
+msgid "Expenses for %(pname)s"
+msgstr "Gastos para %(pname)s"
+
+#: templates/purse/expenses_add.html:25 templates/purse/modify_expense.html:11
+msgid "This transaction is positive"
+msgstr "Este movimiento es positivo"
+
+#: templates/purse/expenses_add.html:26
+msgid "Add expense"
+msgstr "Añadir gasto"
+
+#: templates/purse/expenses_add.html:28
+#, python-format
+msgid "Your purse balance is %(cuantity)s %(currency)s"
+msgstr "Tu balance en el modero es %(cuantity)s %(currency)s"
+
+#: templates/purse/expenses_add.html:31
+msgid "Showing exported expenses"
+msgstr "Mostrando gastos exportados"
+
+#: templates/purse/expenses_add.html:66
+msgid "Export expenses to CSV"
+msgstr "Exportar gastos a CSV"
+
+#: templates/purse/includes/foot.html:5
+#, fuzzy, python-format
+#| msgid ""
+#| "\n"
+#| "Last %(days)s days: %(visits)s visits \n"
+#| "| %(users)s active users \n"
+#| "| %(purses)s active purses.\n"
+msgid ""
+"\n"
+"Last %(days)s days: %(visits)s visits \n"
+"| %(users)s active users \n"
+"| %(apurses)s active purses.\n"
+msgstr ""
+"\n"
+"Últimos %(days)s días: %(visits)s visitas | %(users)s usuarios activos | "
+"%(purses)s monederos activos.\n"
+
+#: templates/purse/login.html:6
+msgid "Log In"
+msgstr "Identifícate"
+
+#: templates/purse/login.html:9
+msgid "User"
+msgstr "Usuario"
+
+#: templates/purse/login.html:10
+#, fuzzy
+#| msgid "Password reset"
+msgid "Password"
+msgstr "Restablecer contraseña"
+
+#: templates/purse/login.html:12 views.py:508
+msgid "Login"
+msgstr "Logarse"
+
+#: templates/purse/modify_expense.html:7
+msgid "Modify your expense"
+msgstr "Modificar gasto"
+
+#: templates/purse/modify_expense.html:13 templates/purse/modify_purse.html:12
+msgid "Save"
+msgstr "Guardar"
+
+#: templates/purse/modify_purse.html:7
+msgid "Modify your purse"
+msgstr "Editar monedero"
+
+#: templates/purse/new_purse.html:7
+msgid "Add a new purse to manage"
+msgstr "Añadir monedero"
+
+#: templates/purse/new_purse.html:11
+msgid "Add new purse"
+msgstr "Añadir monedero"
+
+#: templates/purse/purses.html:7
+msgid "YOUR PURSES"
+msgstr "Tus monederos"
+
+#: templates/purse/purses.html:9
+msgid "Here is list of purses to work with"
+msgstr "Esta es una lista de monederos"
+
+#: templates/purse/purses.html:24
+msgid "Add a new purse"
+msgstr "Añadir monedero"
+
+#: templates/purse/remembermypassword_user.html:6
+msgid "Fill your user name and your e-mail"
+msgstr "Rellena tu nombre de usuario y e-mail"
+
+#: templates/purse/remembermypassword_user.html:10
+msgid "User name"
+msgstr "Nombre de usuario"
+
+#: templates/purse/remembermypassword_user.html:12
+msgid "Request password reset"
+msgstr "Solicitar restablecer contraseña"
+
+#: templates/purse/showimage.html:6
+msgid "Image for the expense"
+msgstr "Imagen para el gasto"
+
+#: templates/purse/showimage.html:14
+msgid "Delete Image"
+msgstr "Borrar imagen"
+
+#: templates/purse/singup.html:11
+msgid "Send"
+msgstr "Enviar"
+
+#: templates/purse/welcome.html:7
+msgid "Welcome to your HomeBank online Purse"
+msgstr "¡Bienvenido a tu monedero online de HomeBank!"
+
+#: templates/purse/welcome.html:8
+msgid ""
+"This app will help you annotate your daily expenses and export them to your "
+"HomeBank application. You can read more on its page."
+msgstr ""
+"Esta aplicación te ayudará a anotar tus gastos diarios y a exportarlos a "
+"tuaplicación de HomeBank. Puedes leer más sobre la aplicación de HomeBank en "
+"su página web."
+
+#: templates/purse/welcome.html:10
+msgid ""
+"Write down, easy and fast, your daily expenses and export them periodically "
+"into your HomeBank account via CSV file."
+msgstr ""
+"Anota, facil y rápidamente tus gastos diarios y expórtalos periodicamentea "
+"tu cuenta de HomeBank mediante un fichero CSV"
+
+#: templates/purse/welcome.html:11
+msgid "That's it."
+msgstr "Eso es todo."
+
+#: templates/purse/welcome.html:13
+msgid ""
+"This is my personal home service, but you are welcome to try it or even "
+"using it if you want."
+msgstr ""
+"Este es mi servicio personal, pero puedes probarlo o incluso utilizarlo si "
+"quieres."
+
+#: templates/purse/welcome.html:15
+msgid "Want to try or have your personal service?"
+msgstr "¿Quieres probar o tener tu propio servicio?"
+
+#: templates/purse/welcome.html:16
+msgid "In this case, don't forget having a look to the development page:"
+msgstr "En ese caso, no olvides echar un vistazo a la página de desarrollo:"
+
+#: views.py:509
+msgid "User or password incorrect."
+msgstr "Usuario o contraseña incorrecto"
+
+#: views.py:540 views.py:554 views.py:581 views.py:589
+msgid "Sign up yourself"
+msgstr "Date de alta"
+
+#: views.py:541
+msgid "User already exists."
+msgstr "Usuario ya existe"
+
+#: views.py:550
+#, python-format
+msgid "Sign up with a valid e-mail:%(email)s)"
+msgstr "Date de alta con un e-mail válido:%(email)s"
+
+#: views.py:555
+msgid "Passwords does not match."
+msgstr "LAs contraseñas no coinciden."
+
+#: views.py:570
+msgid "¡Welcome to your Homebank online Purse!"
+msgstr "¡Bienvenido a tu monedero online de HomeBank!"
+
+#: views.py:572
+#, python-format
+msgid "%(username)s welcome to your HomeBank online Purse."
+msgstr "%(username)s bienvenido a tu monedero online de HomeBank."
+
+#: views.py:582
+msgid "Some fields where incorrect."
+msgstr "Algunos campos estaban incorrectos."
+
+#: views.py:624
+msgid "Please, set a valid e-mail"
+msgstr "Por favor, indica un e-mail válido"
+
+#: views.py:632
+msgid "Your data has been stored"
+msgstr "Sus datos se han guardado"
+
+#: views.py:662
+msgid "Your password has changed"
+msgstr "Tu contraseña ha cambiado"
+
+#: views.py:670
+msgid "Enter a new password"
+msgstr "Introduce una nueva contraseña"
+
+#: views.py:686
+msgid "Reset your password"
+msgstr "Restablece tu contraseña"
+
+#: views.py:687
+msgid "There is not user with this data"
+msgstr "No hay ningún usuario con estos datos"
+
+#: views.py:695
+msgid "Password restore"
+msgstr "Restablecer contraseña"
+
+#: views.py:697
+#, python-format
+msgid "%(username)s, there is one little step to reset your password."
+msgstr "%(username)s, hay un pequeño paso más para restablecer tu contraseña."
+
+#: views.py:705
+msgid "Password reset"
+msgstr "Restablecer contraseña"
+
+#: views.py:706
+msgid "an e-mail has been send to reset your password"
+msgstr "un e-mail ha sido enviado para restablecer tu contraseña"
+
+#: views.py:720
+msgid "passwords did not match"
+msgstr "las contraseñas no coinciden"
+
+#: views.py:728
+msgid "Set your password"
+msgstr "Establece tu contraseña"
+
+#: views.py:729
+msgid "Your new password has been stored"
+msgstr "Tu nueva contraseña ha sido almacenada"
+
+#: views.py:736
+msgid "Set your new password"
+msgstr "Establece tu nueva contraseña"
+
+#~ msgid "date"
+#~ msgstr "fecha"
+
+#~ msgid "expense day"
+#~ msgstr "fecha"
