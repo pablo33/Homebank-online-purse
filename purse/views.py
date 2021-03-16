@@ -3,7 +3,8 @@ from PIL import Image
 from datetime import timedelta
 from .models import Account, Expense, VisitCounter, UserConfig
 from .forms import SignUpForm, PasschForm, PurseForm, ExpenseForm
-from hbpurse import settings
+#from hbpurse import settings
+from proyectos33 import settings
 from django.shortcuts import render, HttpResponse, redirect
 from django.utils import timezone
 from django.utils.http import urlsafe_base64_encode
@@ -264,11 +265,23 @@ def makecsv (expenseslist):
 		output += '%s\n'%(";".join(mylist))
 	return output
 
-def purgepurse (purse):
-	""" Cleans old exported expenses. 
+def purgepurse (pk):
+	""" Cleans old exported expenses. pk=purse number
 		"""
-	topurge = purse.objects.filter(exported=True)
-	pass
+	exported = Expense.objects.filter(account=pk ,exported=True).order_by('-date', '-id')
+	remain = 100
+	if len (exported) > remain:
+		index = 0
+		adjustment = 0
+		for expense in exported:
+			index += 1
+			if index > remain:
+				adjustment = adjustment + expense.amount
+				remove_expense (expense)
+		account = Account.objects.get(pk=pk)
+		account.adjustment = account.adjustment + adjustment
+		account.save()
+	return
 
 # ----------------------------------------------------------------------------
 
@@ -450,11 +463,11 @@ def expenses_export(request, pk):
 				'purse'		: purse,
 				}
 	context.update (basecontext (request) )
+	purgepurse (pk)
 	if request.method == "POST":
 		csvcontent = makecsv (expenseslist)
 		response = HttpResponse (csvcontent, content_type='text/csv')
 		response ['Content-Disposition'] = 'attachment; filename="%s.csv"'%purse.name
-		purgepurse (purse)
 		return response
 	return render (request, 'purse/expenses_export.html', context)
 
