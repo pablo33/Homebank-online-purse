@@ -13,14 +13,14 @@ By now, I still was using the CSV editor, and my wife uses a raw texfile with 3 
 After learning some basics on Django I thought it could be "easy" and nice to have a personal app on a service to manage my expenses and generate a CSV file for Homebank. I have this service hosted at home on a raspberrypi. I hope this piece of software could help others.
 
 ### Features:  
-Starting with:  
  - user login for personal data.
- - easy input data in forms.
+ - easy and fast input data in forms.
  - it marks exported data and non exported data.
  - it tells you how many do you have at this time, your balance.
  - Export to Homebank CSV.
  - use SQlite database.
  - add images for your tickets.
  - activate or deactivate purses.
+ - Multilingual ready. (English as defult, spanish)
 
 More information at [wiki](https://github.com/pablo33/Homebank-online-purse/wiki) pages.
