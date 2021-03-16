@@ -4,11 +4,11 @@ from datetime import timedelta
 from .models import Account, Expense, VisitCounter, UserConfig
 from .forms import SignUpForm, PasschForm, PurseForm, ExpenseForm
 from hbpurse import settings
-#from proyectos33 import settings
 from django.shortcuts import render, HttpResponse, redirect
 from django.utils import timezone
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
+from django.utils.translation import gettext as _
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
@@ -16,8 +16,6 @@ from django.core.mail import send_mail
 from django.core.validators import validate_email
 from django.template.loader import get_template
 from django.db.models import Sum, Count
-
-from django.utils.translation import gettext as _
 
 # ------------------------ Utils --------------------------------------------
 
@@ -259,7 +257,6 @@ def delete_media (projectpath):
 		os.remove (filepath)
 	return True
 
-
 def makecsv (expenseslist):
 	output = 'date;paymode;info;payee;wording;amount;category;tags\n'
 	for e in expenseslist:
@@ -267,6 +264,11 @@ def makecsv (expenseslist):
 		output += '%s\n'%(";".join(mylist))
 	return output
 
+def purgepurse (purse):
+	""" Cleans old exported expenses. 
+		"""
+	topurge = purse.objects.filter(exported=True)
+	pass
 
 # ----------------------------------------------------------------------------
 
@@ -445,13 +447,14 @@ def expenses_export(request, pk):
 	expenseslist = Expense.objects.filter(account = pk, exported=False).order_by ('-date', '-id')
 	context = { 'expenses'	: expenseslist,
 				'count'		: len (expenseslist),
-				'purse'		: Account.objects.get(pk=pk),
+				'purse'		: purse,
 				}
 	context.update (basecontext (request) )
 	if request.method == "POST":
 		csvcontent = makecsv (expenseslist)
 		response = HttpResponse (csvcontent, content_type='text/csv')
 		response ['Content-Disposition'] = 'attachment; filename="%s.csv"'%purse.name
+		purgepurse (purse)
 		return response
 	return render (request, 'purse/expenses_export.html', context)
 

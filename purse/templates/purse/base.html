@@ -2,14 +2,15 @@
 {% load static %}
 {% load i18n %}
 
+{% trans 'HomeBank online purse' as title %}
+
 <head>
 	<meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
    <link rel="icon" type="image/png" href="{% static 'purse/images/purseicon.png' %}" />
 
 	<link name="viewport" content="width-device-width, initial-scale=1.0" />
 	<link rel="stylesheet" type="text/css" href="{% static 'purse/css/purse.css' %}" />
-
-	<title>{% trans 'Homebank online purse' %}</title>
+	<title>{{ title }}</title>
 
 </head>
 
@@ -19,7 +20,7 @@
 <a href="">
 <h1>
 <img src="{% static 'purse/images/purseicon.png'%}" alt="Purse logo">
-{% trans 'Homebank online purse' %}
+{{ title }}
 </h1>
 </a>
 </div>

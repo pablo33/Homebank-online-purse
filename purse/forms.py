@@ -33,6 +33,14 @@ class PurseForm (forms.ModelForm):
 	class Meta:
 		model = Account
 		fields = ('name','color','adjustment', 'active', 'currency', 'showexported')
+		labels = {
+			'name'			:	_('Name'),
+			'color'			:	_('Color'),
+			'adjustment'	:	_('Adjustment'),
+			'active'		:	_('Active'),
+			'currency'		:	_('Currency'),
+			'showexported'	:	_('Show exported expenses'),
+		}
 
 class ExpenseForm (forms.ModelForm):
 	date 	= forms.DateField ( label= _('Date'), required = True, initial=timezone.now)
@@ -46,3 +54,12 @@ class ExpenseForm (forms.ModelForm):
 			'amount',
 			#'tags',
 			'image')
+		labels = {
+			'info'		:	_('info'),
+			'paymode'	:	_('paymode'),
+			'payee'		:	_('payee'),
+			'wording'	:	_('wording'),
+			'amount'	:	_('amount'),
+			'tags'		:	_('tags'),
+			'image'		:	_('image'),
+		}

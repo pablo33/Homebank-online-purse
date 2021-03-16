@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-03-14 16:00+0100\n"
+"POT-Creation-Date: 2021-03-14 20:12+0100\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Pablo Casas <pablolabora@gmx.es>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,76 +17,72 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
+#: forms.py:37 templates/purse/editdata_user.html:9
+msgid "Name"
+msgstr "Nombre"
+
 #: forms.py:38
+msgid "Color"
+msgstr "Color"
+
+#: forms.py:39
+msgid "Adjustment"
+msgstr "Ajuste"
+
+#: forms.py:40
+msgid "Active"
+msgstr "Activo"
+
+#: forms.py:41
+msgid "Currency"
+msgstr "Moneda"
+
+#: forms.py:42
+msgid "Show exported expenses"
+msgstr "Mostrar gastos exportados"
+
+#: forms.py:46
 msgid "Date"
 msgstr "Fecha"
 
-#: models.py:24 templates/purse/editdata_user.html:9
-msgid "Name"
-msgstr "Nombre"
+#: forms.py:58
+msgid "info"
+msgstr "Información"
+
+#: forms.py:59
+msgid "paymode"
+msgstr "Método pago"
+
+#: forms.py:60
+msgid "payee"
+msgstr "Pagador"
+
+#: forms.py:61
+msgid "wording"
+msgstr "Descripción"
+
+#: forms.py:62
+msgid "amount"
+msgstr "Cantidad"
+
+#: forms.py:63
+msgid "tags"
+msgstr "Tags"
+
+#: forms.py:64
+msgid "image"
+msgstr "Imagen"
 
 #: models.py:24
 msgid "Purse/wallet name"
 msgstr "Nombre del monedero"
 
-#: models.py:25
-msgid "Color"
-msgstr "Color"
-
-#: models.py:26
-msgid "Adjustment"
-msgstr "Ajuste"
-
-#: models.py:27
-msgid "Active"
-msgstr "Activo"
-
-#: models.py:28
-msgid "Cuantity"
-msgstr "Cantidad"
-
-#: models.py:29
-msgid "Currency"
-msgstr "Moneda"
-
-#: models.py:30
-msgid "Show exported expenses"
-msgstr "Mostrar gastos exportados"
-
-#: models.py:63
-msgid "paymode"
-msgstr "método pago"
-
-#: models.py:64
-msgid "info"
-msgstr "información"
-
-#: models.py:65
-msgid "payee"
-msgstr "pagador"
-
-#: models.py:66
-msgid "wording"
-msgstr "descripción"
-
-#: models.py:67
-msgid "amount"
-msgstr "cantidad"
-
-#: models.py:68
-msgid "tags"
-msgstr "tags"
-
-#: models.py:69
-msgid "image"
-msgstr "imagen"
-
 #: models.py:88
 msgid "Activate to show inactive purses/wallets"
 msgstr "Activar para mostrar monederos inactivos"
 
-#: templates/purse/base.html:12 templates/purse/base.html:22
-msgid "Homebank online purse"
+#: templates/purse/base.html:11
+msgid "HomeBank online purse"
 msgstr "Monedero online para HomeBank"
 
 #: templates/purse/base.html:30
@@ -180,13 +176,52 @@ msgstr "Mostrando gastos exportados"
 msgid "Export expenses to CSV"
 msgstr "Exportar gastos a CSV"
 
+#: templates/purse/expenses_export.html:7
+msgid "Export information"
+msgstr "Información a exportar"
+
+#: templates/purse/expenses_export.html:11
+#, python-format
+msgid ""
+"\n"
+"There is one expense to export in %(apurse)s.\n"
+msgid_plural ""
+"\n"
+"There are %(acount)s expenses to export in %(apurse)s.\n"
+msgstr[0] ""
+"\n"
+" Hay un solo apuntes para exportar en %(apurse)s.\n"
+msgstr[1] ""
+"\n"
+" Hay %(acount)s apuntes para exportar en %(apurse)s.\n"
+
+#: templates/purse/expenses_export.html:35
+msgid "Are you ready to get your CSV file?"
+msgstr "¿Preparado para descargar tu archivo CSV?"
+
+#: templates/purse/expenses_export.html:41
+msgid "Yes, give me my data"
+msgstr "Sí, descarga el fichero"
+
+#: templates/purse/expenses_export.html:42
+msgid "Not yet"
+msgstr "No, aún no"
+
+#: templates/purse/expenses_export.html:46
+msgid ""
+"This expenses won't be marked as exported, untill you press here. So be sure "
+"you have your CSV file and press here to mark all expenses as exported."
+msgstr ""
+"Los gastos no serán marcados como exportados hasta que pulses aquí. Asegúra "
+"que te descargas el fichero CSV y pulsa luego aquí para que los gastos se "
+"marquen como exportados."
+
+#: templates/purse/expenses_export.html:48
+msgid "There are no expenses to export"
+msgstr "No hay apuntes para exportar"
+
 #: templates/purse/includes/foot.html:5
-#, fuzzy, python-format
-#| msgid ""
-#| "\n"
-#| "Last %(days)s days: %(visits)s visits \n"
-#| "| %(users)s active users \n"
-#| "| %(purses)s active purses.\n"
+#, python-format
 msgid ""
 "\n"
 "Last %(days)s days: %(visits)s visits \n"
@@ -195,7 +230,7 @@ msgid ""
 msgstr ""
 "\n"
 "Últimos %(days)s días: %(visits)s visitas | %(users)s usuarios activos | "
-"%(purses)s monederos activos.\n"
+"%(apurses)s monederos activos.\n"
 
 #: templates/purse/login.html:6
 msgid "Log In"
@@ -338,8 +373,9 @@ msgid "¡Welcome to your Homebank online Purse!"
 msgstr "¡Bienvenido a tu monedero online de HomeBank!"
 
 #: views.py:572
-#, python-format
-msgid "%(username)s welcome to your HomeBank online Purse."
+#, fuzzy, python-format
+#| msgid "%(username)s welcome to your HomeBank online Purse."
+msgid "%(username)s welcome to your Homebank online Purse."
 msgstr "%(username)s bienvenido a tu monedero online de HomeBank."
 
 #: views.py:582
@@ -402,6 +438,9 @@ msgstr "Tu nueva contraseña ha sido almacenada"
 #: views.py:736
 msgid "Set your new password"
 msgstr "Establece tu nueva contraseña"
+
+#~ msgid "Cuantity"
+#~ msgstr "Cantidad"
 
 #~ msgid "date"
 #~ msgstr "fecha"

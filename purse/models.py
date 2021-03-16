@@ -21,13 +21,13 @@ class Account (models.Model):
 		]
 
 	user 	= models.ForeignKey ('auth.User', on_delete=models.CASCADE, blank=False, null=False)		# related User object
-	name	= models.CharField (_('Name'), max_length=40, null=False, blank=False, default='my purse', help_text=_('Purse/wallet name'))		# Name it
-	color	= models.CharField (_('Color'), max_length=7, choices=colorchoices, default="#FFD700")	# background color (default Gold)
-	adjustment = models.DecimalField (_('Adjustment'),max_digits=6, decimal_places=2, default=0)		# starting amount of the account / adjust your real money
-	active = models.BooleanField (_('Active'), default=True)					# Activate or deactivate the account
-	cuantity = models.DecimalField (_('Cuantity'),max_digits=6, decimal_places=2, default=0)		# Cuantity for this account
-	currency= models.CharField (_('Currency'), max_length=8, blank=True, default="€")
-	showexported=models.BooleanField (_('Show exported expenses'), default=False)
+	name	= models.CharField (max_length=40, null=False, blank=False, default='my purse', help_text=_('Purse/wallet name'))		# Name it
+	color	= models.CharField (max_length=7, choices=colorchoices, default="#FFD700")	# background color (default Gold)
+	adjustment = models.DecimalField (max_digits=6, decimal_places=2, default=0)		# starting amount of the account / adjust your real money
+	active = models.BooleanField (default=True)					# Activate or deactivate the account
+	cuantity = models.DecimalField (max_digits=6, decimal_places=2, default=0)		# Cuantity for this account
+	currency= models.CharField (max_length=8, blank=True, default="€")
+	showexported=models.BooleanField (default=False)
 
 	def __str__ (self):
 		return self.name
@@ -58,15 +58,15 @@ class Expense (models.Model):
 
 	user 	= models.ForeignKey ('auth.User', on_delete=models.CASCADE)
 	account	= models.ForeignKey ('Account', on_delete=models.CASCADE, blank=False, null=False)
-	exported = models.BooleanField ('exported', default=False)
+	exported = models.BooleanField (default=False)
 	date 	= models.DateField (null=False, blank=False)
-	paymode = models.PositiveIntegerField (_('paymode'), choices=paymodechoice, default=3)
-	info	= models.CharField (_('info'), max_length=15, default="", blank=True)
-	payee	= models.CharField (_('payee'), max_length=20, default="", blank=True)
-	wording	= models.CharField (_('wording'), max_length=200, default="")
-	amount	= models.DecimalField (_('amount'), max_digits=6, decimal_places=2)
-	tags	= models.CharField (_('tags'), max_length=20, default="", blank=True)
-	image	= models.ImageField (_('image'), blank=True, upload_to=join(MYAPPBASE_DIR,'expenses'))
+	paymode = models.PositiveIntegerField (choices=paymodechoice, default=3)
+	info	= models.CharField (max_length=15, default="", blank=True)
+	payee	= models.CharField (max_length=20, default="", blank=True)
+	wording	= models.CharField (max_length=200, default="")
+	amount	= models.DecimalField (max_digits=6, decimal_places=2)
+	tags	= models.CharField (max_length=20, default="", blank=True)
+	image	= models.ImageField (blank=True, upload_to=join(MYAPPBASE_DIR,'expenses'))
 
 	def __str__(self):
 		return self.wording
@@ -74,10 +74,10 @@ class Expense (models.Model):
 
 class VisitCounter (models.Model):
 	""" Store visitors counter	"""
-	user		= models.CharField ('user', max_length=150)
-	ip			= models.CharField ('ip', max_length=50, null= True)
-	timevisit	= models.DateTimeField ('date', auto_now_add=True, null=True)
-	app			= models.CharField ('App', max_length=50, blank=True, null=True)
+	user		= models.CharField (max_length=150)
+	ip			= models.CharField (max_length=50, null= True)
+	timevisit	= models.DateTimeField (auto_now_add=True, null=True)
+	app			= models.CharField (max_length=50, blank=True, null=True)
 
 	def __str__(self):
 		return self.user + ":" + self.ip

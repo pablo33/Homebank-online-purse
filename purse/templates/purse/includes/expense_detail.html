@@ -8,9 +8,21 @@
 
 <table>
 	<tr class="exported_{{ expense.exported }}">
-	<td class="table_date"><a href="{% url 'purse:expenses_modify' pk=expense.pk %}">{{ expense.date|date:'D d/M' }}</a></td>
-	<td class="table_wording"><a href="{% url 'purse:expenses_modify' pk=expense.pk %}">{{ expense.wording }}</a></td>
-	<td class="table_sum {% if expense.amount > 0 %}positive{% endif %}"><a href="{% url 'purse:expenses_modify' pk=expense.pk %}">{{ expense.amount }}</a></td>
+	<td class="table_date">
+		{% if not expense.exported %}<a href="{% url 'purse:expenses_modify' pk=expense.pk %}">{% endif %}
+		{{ expense.date|date:'D d/M' }}
+		{% if not expense.exported %}</a>{% endif %}
+	</td>
+	<td class="table_wording">
+		{% if not expense.exported %}<a href="{% url 'purse:expenses_modify' pk=expense.pk %}">{% endif %}
+		{{ expense.wording }}
+		{% if not expense.exported %}</a>{% endif %}
+	</td>
+	<td class="table_sum {% if expense.amount > 0 %}positive{% endif %}">
+		{% if not expense.exported %}<a href="{% url 'purse:expenses_modify' pk=expense.pk %}">{% endif %}
+		{{ expense.amount }}
+		{% if not expense.exported %}</a>{% endif %}
+	</td>
 	<td class="table_option">
 	{% if not expense.exported %}
 	<a href="{% url 'purse:expenses_delete' pk=expense.pk %}">	<img class="icons" src="{% static '/purse/images/i-delete.png' %}" alt=""></a>
