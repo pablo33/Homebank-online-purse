@@ -1,10 +1,10 @@
 import os, re
+from random import randint
 from PIL import Image
 from datetime import timedelta
 from .models import Account, Expense, VisitCounter, UserConfig
 from .forms import SignUpForm, PasschForm, PurseForm, ExpenseForm
-#from hbpurse import settings
-from proyectos33 import settings
+from hbpurse import settings
 from django.shortcuts import render, HttpResponse, redirect
 from django.utils import timezone
 from django.utils.http import urlsafe_base64_encode
@@ -244,7 +244,7 @@ def normalize_image (expense):
 	if expense.image:
 		imagepath = settings.BASE_DIR + expense.image.url 	#Existent file now is "imagepath"
 		newimagepath1 = resize_image (imagepath, 800)		#Existent file now is "imagepath1"
-		newimagepath = rename_image (newimagepath1, expense.pk)	#file has been renamed to "newimagepath"
+		newimagepath = rename_image (newimagepath1, str(expense.pk) + str(randint(0, 999999)).zfill(6))	#file has been renamed to "newimagepath"
 		if newimagepath != imagepath:
 			expense.image = newimagepath [len(settings.MEDIA_ROOT)+1:]
 			os.rename (newimagepath1, newimagepath)
