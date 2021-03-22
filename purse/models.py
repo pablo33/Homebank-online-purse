@@ -21,7 +21,7 @@ class Account (models.Model):
 		]
 
 	user 	= models.ForeignKey ('auth.User', on_delete=models.CASCADE, blank=False, null=False)		# related User object
-	name	= models.CharField (max_length=40, null=False, blank=False, default='my purse', help_text=_('Purse/wallet name'))		# Name it
+	name	= models.CharField (max_length=40, null=False, blank=False, default=_('my purse'), help_text=_('Purse/wallet name'))		# Name it
 	color	= models.CharField (max_length=7, choices=colorchoices, default="#FFD700")	# background color (default Gold)
 	adjustment = models.DecimalField (max_digits=6, decimal_places=2, default=0)		# starting amount of the account / adjust your real money
 	active = models.BooleanField (default=True)					# Activate or deactivate the account

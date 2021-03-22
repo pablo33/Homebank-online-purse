@@ -30,13 +30,14 @@ class PasschForm (UserCreationForm):
 			)
 
 class PurseForm (forms.ModelForm):
+	resetto = forms.DecimalField (decimal_places = 2, required=False, initial="", label=_('Reset purse to this amount') )
 	class Meta:
 		model = Account
-		fields = ('name','color','adjustment', 'active', 'currency', 'showexported')
+		fields = ('name','color', 'active', 'currency', 'showexported')
 		labels = {
 			'name'			:	_('Name'),
 			'color'			:	_('Color'),
-			'adjustment'	:	_('Adjustment'),
+			#'adjustment'	:	_('Adjustment'),
 			'active'		:	_('Active'),
 			'currency'		:	_('Currency'),
 			'showexported'	:	_('Show exported expenses'),

@@ -1,5 +1,6 @@
 import os, re
 from random import randint
+from decimal import Decimal
 from PIL import Image
 from datetime import timedelta
 from .models import Account, Expense, VisitCounter, UserConfig
@@ -165,7 +166,7 @@ def update_account (account):
 	sumexpenses = 0
 	if total ['amount__sum'] != None:
 		sumexpenses = "%.2f"%total ['amount__sum']
-	account.cuantity = float( sumexpenses ) + float(account.adjustment)
+	account.cuantity = Decimal(sumexpenses) + Decimal(account.adjustment)
 	account.save()
 
 def remove_expense (expense):
@@ -227,8 +228,6 @@ def resize_image (imagepath, max_size):
 	img = img.resize (( width, height ))
 	img.mode = 'RGB'
 	newimagepath = os.path.splitext(imagepath)[0] + '.jpg'
-	#if itemcheck (newimagepath) == 'file':
-	#	newimagepath = Nextfilenumber (newimagepath)
 	img.save(newimagepath)
 	if imagepath != newimagepath and itemcheck (imagepath) == 'file':
 		os.remove (imagepath)
@@ -319,13 +318,16 @@ def new_purse (request):
 		return redirect ('purse:login_user')
 	if request.method == "POST":
 		form = PurseForm(request.POST)
+		resetto = request.POST ['resetto']
+		if resetto == '':
+			resetto = 0
+		resetto = Decimal(resetto)
 		if form.is_valid():
 			newaccount = form.save (commit = False)
 			newaccount.user = request.user
-			newaccount.cuantity = newaccount.adjustment
+			newaccount.cuantity = resetto
 			newaccount.save()
-		return redirect ('purse:welcome') 
-
+		return redirect ('purse:welcome')
 	context = { 'form' : PurseForm }
 	context.update (basecontext (request) )
 	return render (request, 'purse/new_purse.html', context)
@@ -341,9 +343,12 @@ def modify_purse (request, pk):
 		return redirect ('purse:welcome')
 	if request.method == "POST":
 		form = PurseForm(request.POST, instance=account)
+		resetto = request.POST ['resetto']
 		if form.is_valid():
 			account = form.save (commit=False)
 			account.user = request.user
+			if resetto != '':
+				account.adjustment = Decimal(resetto) - (Decimal(account.cuantity) - Decimal(account.adjustment))
 			account.save ()
 			update_account (account)
 		return redirect ('purse:expenses', pk=pk)
