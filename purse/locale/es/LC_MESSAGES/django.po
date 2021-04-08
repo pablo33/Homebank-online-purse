@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-03-22 21:12+0100\n"
+"POT-Creation-Date: 2021-04-05 20:48+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Pablo Casas <pablolabora@gmx.es>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -170,7 +170,7 @@ msgstr "Añadir gasto"
 #: templates/purse/expenses_add.html:28
 #, python-format
 msgid "Your purse balance is %(cuantity)s %(currency)s"
-msgstr "Tu balance en el modero es %(cuantity)s %(currency)s"
+msgstr "Tu balance en el monedero es %(cuantity)s %(currency)s"
 
 #: templates/purse/expenses_add.html:31
 msgid "Showing exported expenses"
