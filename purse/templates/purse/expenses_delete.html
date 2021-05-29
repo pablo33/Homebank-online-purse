@@ -1,8 +1,9 @@
 {% extends 'purse/base.html' %}
 {% load static %}
+{% load i18n %}
 {% block contenido %}
 <div class="">
-<h2>Delete this expense?</h2>
+<h2>{% trans 'Delete this expense?' %}</h2>
 
 {% include 'purse/includes/expense_detail.html' %}
 
@@ -10,7 +11,7 @@
 		{% csrf_token %}
 	<!-- {{ form.as_p }} -->	
 <p>
-	<input type="submit" value="Delete Expense" />
+	<input type="submit" value="{% trans 'Delete Expense' %}" />
 </p>
 	</form>
 <br>
