@@ -1,3 +1,13 @@
+# custom
+.gitignore
+myvenv
+settings.ini
+*.bfproject
+*~
+/media/purse/expenses/*
+Link to purse@proyectos33
+
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
