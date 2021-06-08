@@ -1,0 +1,5 @@
+Project admin user: admin
+password: Pa$$w0rD
+
+#admin url:
+http://127.0.0.1:8000/admin
