@@ -1,7 +1,7 @@
 {% load i18n %}
 
 <div class="foot">
-<p>
+<p class="justify">
 {% blocktrans with days=statistics.visitor_since_days visits=statistics.visitor_count users=statistics.users_active apurses=statistics.purses_active_count %}
 Last {{ days }} days: {{ visits }} visits 
 | {{ users }} active users 

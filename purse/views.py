@@ -6,7 +6,6 @@ from datetime import timedelta
 from .models import Account, Expense, VisitCounter, UserConfig
 from .forms import SignUpForm, PasschForm, PurseForm, ExpenseForm
 from hbpurse import settings
-#from proyectos33 import settings
 from django.shortcuts import render, HttpResponse, redirect
 from django.utils import timezone
 from django.utils.http import urlsafe_base64_encode
@@ -202,9 +201,34 @@ def cleanmyfile (oldimage,imgfield ):
 				return True
 	return False
 
+def autorotate (imagepath):
+	"""
+	It will rotate a image if it has an exif orientation data
+	Returns True if image is rotated, otherway it return False
+	It opens and writes the image file in case it is rotated
+	"""
+	img = Image.open(imagepath)
+	exif = img._getexif()
+	if exif == None:
+		return False
+
+	orientation_key = 274 # cf ExifTags
+	if orientation_key in exif:
+		orientation = exif[orientation_key]
+		rotate_values = {
+			3: Image.ROTATE_180,
+			6: Image.ROTATE_270,
+			8: Image.ROTATE_90,
+		}
+		if orientation in rotate_values:
+			# Rotate and save the picture
+			img = img.transpose(rotate_values[orientation])
+			img.save(imagepath)
+			return True
+	return False
+
 def resize_image (imagepath, max_size):
-	""" Resize an imagefile to a maximus of pixels, width or height.
-	None of their sizes will pass the max_size
+	""" Resize an imagefile to a maximum of pixels, width or height.
 	It will save the file as jpg and RGB colors
 	It will delete oldimage is it is hasn't a jpg as file extension.
 	It returns None if there is no conversion
@@ -243,6 +267,7 @@ def rename_image (imagepath, pk):
 def normalize_image (expense):
 	if expense.image:
 		imagepath = settings.BASE_DIR + expense.image.url 	#Existent file now is "imagepath"
+		autorotate (imagepath)
 		newimagepath1 = resize_image (imagepath, 800)		#Existent file now is "imagepath1"
 		newimagepath = rename_image (newimagepath1, str(expense.pk) + str(randint(0, 999999)).zfill(6))	#file has been renamed to "newimagepath"
 		if newimagepath != imagepath:

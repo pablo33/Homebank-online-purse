@@ -8,8 +8,10 @@
 	<form method="POST" enctype="multipart/form-data" class="form">
 		{% csrf_token %}
 		{{ form.as_p }}
+		<p>
 		<input type="submit" value="{% trans "Send" %}" />
 		<input type="button" value="{% trans "Back" %} " onclick="javascript: history.go(-1)" />
+		</p>
 	</form>
 	</p>
 	</div>
