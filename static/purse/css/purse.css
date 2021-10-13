@@ -5,8 +5,15 @@ body {
 	}
 
 p {
-	margin-left: 5%;
+	/*margin-left: 5%;*/
+	text-align: center;
 	}
+
+.justify {
+	text-align: justify;
+	margin-left: 5%;
+	width: 90%;
+}
 
 .resalt {
 	background-color: #ccc;
@@ -176,7 +183,7 @@ table {
 
 /* Icons */
 .icons {
-	width: 40px;
+	height: 40px;
 	margin: 0px;
 	margin-left: 10px;
 	margin-right: 10px;

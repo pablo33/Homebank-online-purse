@@ -10,6 +10,9 @@ class SignUpForm (UserCreationForm):
 	first_name 	= forms.CharField (required = True)
 	last_name 	= forms.CharField (required = True)
 	email		= forms.EmailField(required = True)
+	first_name.label 	= _('First Name')
+	last_name.label		= _('Last Name')
+	email.label			= _('e-mail')
 	class Meta:
 		model = User
 		fields = (
@@ -20,6 +23,11 @@ class SignUpForm (UserCreationForm):
 			'password1',
 			'password2',
 			)
+		labels = {
+			'username'	: _('User'),
+			'password1'	: _('Password'),
+			'password2'	: _('Password'),
+		}
 
 class PasschForm (UserCreationForm):
 	class Meta:

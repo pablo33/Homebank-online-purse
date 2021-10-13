@@ -1,12 +1,13 @@
-import os, re
-from random import randint
-from decimal import Decimal
-from PIL import Image
-from datetime import timedelta
 from .models import Account, Expense, VisitCounter, UserConfig
 from .forms import SignUpForm, PasschForm, PurseForm, ExpenseForm
+
+from decimal import Decimal
+from datetime import timedelta
+
 from hbpurse import settings
-from django.shortcuts import render, HttpResponse, redirect
+from purse import preferences as pref
+
+from django.shortcuts import HttpResponse, render,redirect, get_object_or_404
 from django.utils import timezone
 from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
@@ -14,81 +15,62 @@ from django.utils.translation import gettext as _
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.models import User
 from django.contrib.auth.tokens import default_token_generator
+from django.core.paginator import Paginator
 from django.core.mail import send_mail
 from django.core.validators import validate_email
 from django.template.loader import get_template
-from django.db.models import Sum, Count
+from django.db.models import Count
+from django.urls import reverse
 
-# ------------------------ Utils --------------------------------------------
 
-def itemcheck(pointer):
-	""" returns what kind of a pointer is """
-	if not (type(pointer) is str or type(pointer) is unicode):
-		raise NotStringError ('Bad input, it must be a string')
-	if pointer.find("//") != -1 :
-		raise MalformedPathError ('Malformed Path, it has double slashes')
-	
-	if os.path.isfile(pointer):
-		return 'file'
-	if os.path.isdir(pointer):
-		return 'folder'
-	if os.path.islink(pointer):
-		return 'link'
-	return ""
+# __@@ Decorators @@__
 
-def Nextfilenumber (dest):
-	''' Returns the next filename counter as filename(nnn).ext
-	input: /path/to/filename.ext
-	output: /path/to/filename(n).ext
-		'''
-	if dest == "":
-		raise EmptyStringError ('empty strings as input are not allowed')
-	filename = os.path.basename (dest)
-	extension = os.path.splitext (dest)[1]
-	# extract secuence
-	expr = '\(\d{1,}\)'+extension
-	mo = re.search (expr, filename)
-	try:
-		grupo = mo.group()
-	except:
-		#  print ("No final counter expression was found in %s. Counter is set to 0" % dest)
-		counter = 0
-		cut = len (extension)
-	else:
-		#  print ("Filename has a final counter expression.  (n).extension ")
-		cut = len (mo.group())
-		countergroup = (re.search ('\d{1,}', grupo))
-		counter = int (countergroup.group()) + 1
-	if cut == 0 :
-		newfilename = os.path.join( os.path.dirname(dest), filename + "(" + str(counter) + ")" + extension)
-	else:
-		newfilename = os.path.join( os.path.dirname(dest), filename [0:-cut] + "(" + str(counter) + ")" + extension)
-	return newfilename
+def need_login(fx):
+	def decorator (*args, **kw_args):
+		request = args[0]
+		if request.user.is_authenticated:
+			return fx(*args, **kw_args)
+		return redirect (f"{reverse('pibucket:login_user')}?next={request.path}")
+	return decorator
 
-def get_client_ip(request):
-    x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
-    if x_forwarded_for:
-        ip = x_forwarded_for.split(',')[-1].strip()
-    else:
-        ip = request.META.get('REMOTE_ADDR')
-    return ip
+def force_logout(fx):
+	def decorator (*args, **kw_args):
+		request = args[0]
+		if request.user.is_authenticated:
+			logout (request)
+		return fx(*args, **kw_args) 
+	return decorator
 
-def add_visitor (request):
-	ip = get_client_ip (request)
-	user = request.user
-	now = timezone.now()
-	v = VisitCounter (user = user, ip = ip, timevisit = now, app='purse')
-	checkin = False
-	
-	try:
-		lastv = VisitCounter.objects.filter (user = user, ip = ip, app='purse').order_by ("-timevisit")[0]
-		if now - lastv.timevisit > timedelta (minutes = 60):
-			checkin = True # is a returning visitor from the same IP
-	except:
-		checkin = True # It's a new new visitor
-	if checkin:
+def add_visitor(fx):
+	app = 'purse'
+	def get_client_ip(request):
+		x_forwarded_for = request.META.get('HTTP_X_FORWARDED_FOR')
+		if x_forwarded_for:
+			ip = x_forwarded_for.split(',')[-1].strip()
+		else:
+			ip = request.META.get('REMOTE_ADDR')
+		return ip
+
+	def decorator (*args, **kw_args):
+		request = args[0]
+		ip = get_client_ip (request)
+		user = request.user
+		now = timezone.now()
+		v = VisitCounter (user = user, ip = ip, timevisit = now, app=app)
+		lastminutes = now - timedelta (minutes = 60)
+
+		lastvisits = VisitCounter.objects.filter (ip = ip, app=app, timevisit__gt=lastminutes)
+		if lastvisits.count() > 0:
+			if not user.is_authenticated:
+				if lastvisits.filter(user = 'AnonymousUser').count() > 1:
+					lastvisits.filter(user = 'AnonymousUser').delete()
+				return fx(*args, **kw_args)
+			else:	
+				lastvisits.filter(user = user).delete()
+				lastvisits.filter(user = 'AnonymousUser').delete()
 		v.save ()
-	return
+		return fx(*args, **kw_args)
+	return decorator
 
 class Statistics:
 	"""Statistics for database """
@@ -128,9 +110,7 @@ class Statistics:
 	def __users__ (self):
 		self.users_number = User.objects.count()
 
-
 STnumbers = Statistics()
-
 
 def send_user_mail(recipients, title, template, templatecontext, txtcontent = ''):
 	""" Sends e-mail based on an django template
@@ -161,128 +141,6 @@ def adduserdefaults (user):
 	config.showinactive = False
 	config.save()
 
-def update_account (account):
-	total = (Expense.objects.filter(account=account).aggregate(Sum('amount')))
-	sumexpenses = 0
-	if total ['amount__sum'] != None:
-		sumexpenses = "%.2f"%total ['amount__sum']
-	account.cuantity = Decimal(sumexpenses) + Decimal(account.adjustment)
-	account.save()
-
-def remove_expense (expense):
-	if expense.image != "":
-		delete_media (expense.image.url)
-	expense.delete()
-	return
-
-def basecontext (request):
-	""" Refresh user session pannels. It takes the last data at DB.
-		"""
-	add_visitor (request)
-	STnumbers.update()
-	return {
-			'statistics'		:	STnumbers,
-			}
-
-def cleanmyfile (oldimage,imgfield ):
-	""" Checks new image filename and deletes oldimage
-		"""
-	targetfile = settings.BASE_DIR + oldimage
-	if oldimage != "":
-		if imgfield == "":
-			if itemcheck (targetfile) == 'file':
-				os.remove (targetfile)
-			return True
-		else:
-			if (os.path.basename(oldimage) != os.path.basename(imgfield.url)) or os.path.basename(imgfield.url).startswith(oldimage):
-				delete_media (oldimage)
-				##if itemcheck (targetfile) == 'file':
-				##	os.remove (settings.BASE_DIR + oldimage)
-				return True
-	return False
-
-def autorotate (imagepath):
-	"""
-	It will rotate a image if it has an exif orientation data
-	Returns True if image is rotated, otherway it return False
-	It opens and writes the image file in case it is rotated
-	"""
-	img = Image.open(imagepath)
-	exif = img._getexif()
-	if exif == None:
-		return False
-
-	orientation_key = 274 # cf ExifTags
-	if orientation_key in exif:
-		orientation = exif[orientation_key]
-		rotate_values = {
-			3: Image.ROTATE_180,
-			6: Image.ROTATE_270,
-			8: Image.ROTATE_90,
-		}
-		if orientation in rotate_values:
-			# Rotate and save the picture
-			img = img.transpose(rotate_values[orientation])
-			img.save(imagepath)
-			return True
-	return False
-
-def resize_image (imagepath, max_size):
-	""" Resize an imagefile to a maximum of pixels, width or height.
-	It will save the file as jpg and RGB colors
-	It will delete oldimage is it is hasn't a jpg as file extension.
-	It returns None if there is no conversion
-	It returns the (new or entered) imagepath if a conversion is done
-		"""
-	img = Image.open (imagepath)
-	if img.width < max_size and img.height < max_size:
-		# Image is smaller than max_size, factor is 1
-		factor = 1
-	elif img.width > img.height:
-		factor = img.width / max_size
-	else:
-		factor = img.height / max_size
-	width = int(img.width // factor)
-	height = int(img.height // factor)
-	if abs (width - max_size) == 1:
-		width = max_size
-		height += 1
-	if abs (height - max_size) == 1:
-		height = max_size
-		width += 1
-	img = img.resize (( width, height ))
-	img.mode = 'RGB'
-	newimagepath = os.path.splitext(imagepath)[0] + '.jpg'
-	img.save(newimagepath)
-	if imagepath != newimagepath and itemcheck (imagepath) == 'file':
-		os.remove (imagepath)
-	return newimagepath
-
-def rename_image (imagepath, pk):
-	filename = os.path.basename (imagepath)
-	extension = os.path.splitext (imagepath)[1]
-	newimagepath = os.path.join( os.path.dirname(imagepath), str(pk) + extension)
-	return newimagepath
-
-def normalize_image (expense):
-	if expense.image:
-		imagepath = settings.BASE_DIR + expense.image.url 	#Existent file now is "imagepath"
-		autorotate (imagepath)
-		newimagepath1 = resize_image (imagepath, 800)		#Existent file now is "imagepath1"
-		newimagepath = rename_image (newimagepath1, str(expense.pk) + str(randint(0, 999999)).zfill(6))	#file has been renamed to "newimagepath"
-		if newimagepath != imagepath:
-			expense.image = newimagepath [len(settings.MEDIA_ROOT)+1:]
-			os.rename (newimagepath1, newimagepath)
-			expense.save()
-			return True
-	return None
-
-def delete_media (projectpath):
-	filepath = settings.BASE_DIR + projectpath
-	if itemcheck (filepath) == 'file':
-		os.remove (filepath)
-	return True
-
 def makecsv (expenseslist):
 	output = 'date;paymode;info;payee;wording;amount;category;tags\n'
 	for e in expenseslist:
@@ -290,29 +148,17 @@ def makecsv (expenseslist):
 		output += '%s\n'%(";".join(mylist))
 	return output
 
-def purgepurse (pk):
-	""" Cleans old exported expenses. pk=purse number
+@add_visitor
+def basecontext (request):
+	""" Refresh user session pannels. It takes the last data at DB.
 		"""
-	exported = Expense.objects.filter(account=pk ,exported=True).order_by('-date', '-id')
-	remain = 100
-	if len (exported) > remain:
-		index = 0
-		adjustment = 0
-		for expense in exported:
-			index += 1
-			if index > remain:
-				adjustment = adjustment + expense.amount
-				remove_expense (expense)
-		account = Account.objects.get(pk=pk)
-		account.adjustment = account.adjustment + adjustment
-		account.save()
-	return
+	STnumbers.update()
+	return {
+			'statistics'		:	STnumbers,
+			}
 
 # ----------------------------------------------------------------------------
-
 # Your views here.
-#
-##############################
 
 def welcome (request):
 	next = request.GET.get('next', '')
@@ -339,9 +185,8 @@ def welcome (request):
 	context.update (basecontext (request) )
 	return render(request, 'purse/welcome.html', context )  # go to welcome page
 
+@need_login
 def new_purse (request):
-	if not request.user.is_authenticated:
-		return redirect ('purse:login_user')
 	if request.method == "POST":
 		form = PurseForm(request.POST)
 		resetto = request.POST ['resetto']
@@ -358,15 +203,11 @@ def new_purse (request):
 	context.update (basecontext (request) )
 	return render (request, 'purse/new_purse.html', context)
 
+@need_login
 def modify_purse (request, pk):
-	try:
-		account = Account.objects.get(pk = pk)
-	except:
-		return redirect ('purse:welcome')
-	if not request.user.is_authenticated:
-		return redirect ('purse:login_user')
+	account = get_object_or_404 (Account, pk = pk)
 	if request.user != account.user:
-		return redirect ('purse:welcome')
+		return redirect (f"{reverse('pibucket:login_user')}?next={request.path}")
 	if request.method == "POST":
 		form = PurseForm(request.POST, instance=account)
 		resetto = request.POST ['resetto']
@@ -374,9 +215,8 @@ def modify_purse (request, pk):
 			account = form.save (commit=False)
 			account.user = request.user
 			if resetto != '':
-				account.adjustment = Decimal(resetto) - (Decimal(account.cuantity) - Decimal(account.adjustment))
-			account.save ()
-			update_account (account)
+				account.resetto(resetto)
+			account.update_account()
 		return redirect ('purse:expenses', pk=pk)
 	form = PurseForm (instance=account)
 	context = { 'form' : form,
@@ -385,15 +225,12 @@ def modify_purse (request, pk):
 	context.update (basecontext (request) )
 	return render (request, 'purse/modify_purse.html', context)
 
+@need_login
 def expenses_purse(request, pk):
-	try:
-		account = Account.objects.get(pk = pk)
-	except:
-		return redirect ('purse:welcome')
-	if not request.user.is_authenticated:
-		return redirect ('purse:login_user')
+	account = get_object_or_404 (Account, pk = pk)
+	pagenumber = request.GET.get('page', '1')
 	if request.user != account.user:
-		return redirect ('purse:welcome')
+		return redirect (f"{reverse('pibucket:login_user')}?next={request.path}")
 	if request.method == 'POST':
 		try:
 			request.POST ['positive']
@@ -402,38 +239,36 @@ def expenses_purse(request, pk):
 			positive = False
 		form = ExpenseForm(request.POST, request.FILES)
 		if form.is_valid():
-			expense = form.save (commit=False)
+			expense = form.save(commit=False)
 			expense.user = request.user
 			expense.account = account
 			expense.amount = -abs(expense.amount)
 			if positive:
 				expense.amount = -expense.amount
-			expense.save ()
-			normalize_image (expense)
-			update_account (account)
+			expense.save()
+			expense.normalize_image()
+			account.update_account()
 
 	expenses = Expense.objects.filter (account = account).order_by ('-date', '-id')
+	paginated = Paginator(object_list=expenses, per_page=pref.expenses_list_maxitems , orphans=pref.expenses_list_orphans, allow_empty_first_page=True)
+	page = paginated.get_page(pagenumber)
 	context = {
 			'purse' 	: account,
-			'expenses' 	: expenses,
+			'page'		: page,
 			'count'		: len (expenses),
 			'form'		: ExpenseForm,
 			}
 	context.update (basecontext (request) )
 	return render (request, 'purse/expenses_add.html', context)
 
+@need_login
 def expenses_modify (request, pk):
-	try:
-		expense = Expense.objects.get(pk = pk)
-	except:
-		return redirect ('purse:welcome')
-	if not request.user.is_authenticated:
-		return redirect ('purse:login_user')
+	expense = get_object_or_404 (Expense, pk = pk)
 	if request.user != expense.account.user:
-		return redirect ('purse:welcome')
+		return redirect (f"{reverse('pibucket:login_user')}?next={request.path}")
 	oldimage = ""
 	if expense.image != "":
-		oldimage = expense.image.url[:] # make a hardcopy of actual value	
+		oldimage = expense.image.path[:] # make a hardcopy of actual value	
 	if request.method == "POST":
 		try:
 			request.POST ['positive']
@@ -443,13 +278,13 @@ def expenses_modify (request, pk):
 		form = ExpenseForm(request.POST, request.FILES, instance=expense)
 		if form.is_valid():
 			expense = form.save (commit=False)
-			cleanmyfile (oldimage,expense.image)
+			expense.cleanmyfile (oldimage)
 			expense.amount = -abs(expense.amount)
 			if positive:
 				expense.amount = -expense.amount
-			expense.save ()
-			normalize_image (expense)
-			update_account (expense.account)
+			expense.save()
+			expense.normalize_image()
+			expense.account.update_account()
 		return redirect ('purse:expenses', pk=expense.account.pk)
 	form = ExpenseForm (instance=expense)
 	context = { 'form' : form,
@@ -458,20 +293,14 @@ def expenses_modify (request, pk):
 	context.update (basecontext (request) )
 	return render (request, 'purse/modify_expense.html', context)
 
+@need_login
 def expenses_delete (request, pk):
-	try:
-		expense = Expense.objects.get(pk = pk)
-	except:
-		return redirect ('purse:welcome')
-	if not request.user.is_authenticated:
-		return redirect ('purse:login_user')
+	expense = get_object_or_404 (Expense, pk = pk)
 	if request.user != expense.account.user:
-		return redirect ('purse:welcome')
+		return redirect (f"{reverse('pibucket:login_user')}?next={request.path}")
 	if request.method == 'POST':
-		remove_expense (expense)
-		update_account (expense.account)
-		#if expense.image != "":
-		#	os.remove (settings.BASE_DIR + expense.image.url)
+		expense.remove_expense()
+		expense.account.update_account()
 		return redirect ('purse:expenses', pk=expense.account.pk)
 	context = {
 			'expense'	: expense,
@@ -479,63 +308,56 @@ def expenses_delete (request, pk):
 	context.update (basecontext (request) )
 	return render (request, 'purse/expenses_delete.html', context)
 
+@need_login
 def expenses_export(request, pk):
-	try:
-		purse = Account.objects.get(pk = pk)
-	except:
-		return redirect ('purse:welcome')
-	if not request.user.is_authenticated:
-		return redirect ('purse:login_user')
+	purse = get_object_or_404 (Account, pk = pk)
+	pagenumber = request.GET.get('page', '1')
 	if request.user != purse.user:
-		return redirect ('purse:welcome')
+		return redirect (f"{reverse('pibucket:login_user')}?next={request.path}")
 	expenseslist = Expense.objects.filter(account = pk, exported=False).order_by ('-date', '-id')
-	context = { 'expenses'	: expenseslist,
-				'count'		: len (expenseslist),
-				'purse'		: purse,
-				}
-	context.update (basecontext (request) )
-	purgepurse (pk)
 	if request.method == "POST":
 		csvcontent = makecsv (expenseslist)
 		response = HttpResponse (csvcontent, content_type='text/csv')
 		response ['Content-Disposition'] = 'attachment; filename="%s.csv"'%purse.name
 		return response
+	paginated = Paginator (object_list= expenseslist, per_page=pref.expenses_list_maxitems, orphans=pref.expenses_list_orphans, allow_empty_first_page=True)
+	page = paginated.get_page (pagenumber)
+	context = { 'page'		: page,
+				'purse'		: purse,
+				}
+	context.update (basecontext (request) )
+	purse.purgepurse()
 	return render (request, 'purse/expenses_export.html', context)
 
+@need_login
 def mark_exported (request, pk):
-	try:
-		purse = Account.objects.get(pk = pk)
-	except:
-		return redirect ('purse:welcome')
-	if not request.user.is_authenticated:
-		return redirect ('purse:login_user')
+	purse = get_object_or_404 (Account, pk = pk)
 	if request.user != purse.user:
-		return redirect ('purse:welcome')
+		return redirect (f"{reverse('pibucket:login_user')}?next={request.path}")
 	expenseslist = Expense.objects.filter(account = pk, exported=False)
 	for e in expenseslist:
 		e.exported = True
 		e.save()
 	return redirect ('purse:expenses', pk=pk)
 
-
+@need_login
 def expenses_image (request, pk):
-	try:
-		expense = Expense.objects.get(pk = pk)
-	except:
-		return redirect ('purse:welcome')
-	if not request.user.is_authenticated:
-		return redirect ('purse:login_user')
+	expense = get_object_or_404 (Expense, pk = pk)
 	if request.user != expense.user:
-		return redirect ('purse:welcome')
+		return redirect (f"{reverse('pibucket:login_user')}?next={request.path}")
 	if request.method == "POST":
-		delete_media (expense.image.url)
+		expense.delete_media()
 		expense.image = None
 		expense.save()
 		return redirect ('purse:expenses', pk=expense.account.pk)
-	context = {	'expense' : expense,}
+	context = {	'expense' : expense,
+				'purse'	  : expense.account,}
 	context.update (basecontext (request) )
 	return render (request, 'purse/showimage.html', context)
 
+# self user management
+
+@force_logout
 def login_user (request):
 	next = request.GET.get('next', '')
 	if request.method == "POST":
@@ -551,59 +373,54 @@ def login_user (request):
 			else:
 				return redirect (next)
 		else:
-			context = {
-				'title'	: _('Login'),
-				'msg' 	: _('User or password incorrect.'),
+			return render (request, 'purse/msgs/msgconfirm.html',
+				{
+				'title'	: 'Login',
+				'msg' 	: 'Usuario o contraseña incorrecta.',
 				'back' 	: True,
-				}
-			context.update (basecontext (request) )
-			return render (request, 'purse/msgs/msgconfirm.html', context)
+				})
 
 	else:
 		user, password = ("","")
 		if request.user.is_authenticated:
 			user = request.user
 			password = request.user.password
-		context = {
+		return render (request, 'purse/login.html', {
 			'user' 		: user,
 			'password' 	: password,
-			'next' 		: next,
-			}
-		context.update (basecontext (request) )
-		return render (request, 'purse/login.html', context )
+			'next' : next,
+			})
 
+@force_logout
 def logout_user (request):
-	if request.user.is_authenticated:
-		logout (request)
 	return redirect ('purse:welcome')
 
+@force_logout
 def SignUpView (request):
-	if request.user.is_authenticated:
-		logout (request)
 	if request.method == "POST":
 		form = SignUpForm(request.POST)
 		username = request.POST ['username']
 		if len (User.objects.filter (username=username)) >= 1:
-			context = { 'title'	: _('Sign up yourself'),
-						'msg' 	: _('User already exists.'),
+			return render (request, 'purse/msgs/msgconfirm.html',
+						{
+						'title'	: 'Date de alta',
+						'msg' 	: 'El usuario ya existe.',
 						'back' 	: True,
-						}
-			context.update (basecontext (request) )
-			return render (request, 'purse/msgs/msgconfirm.html', context)
+						})
 		email = request.POST ['email']
 		try:
 			validate_email (email)
 		except :
-			return HttpResponse (_('Sign up with a valid e-mail:%(email)s)') % {'email':email})
+			return HttpResponse ('introduce un e-mail válido: <strong>%s</strong>'%email)
 		password  = request.POST ['password1']
 		password2 = request.POST ['password2']
 		if password != password2:
-			context = {	'title'	: _('Sign up yourself'),
-						'msg' 	: _('Passwords does not match.'),
+			return render (request, 'purse/msgs/msgconfirm.html',
+						{
+						'title'	: 'Date de alta',
+						'msg' 	: 'Las contraseñas no coinciden.',
 						'back' 	: True,
-						}
-			context.update (basecontext (request) )
-			return render (request, 'purse/msgs/msgconfirm.html', context)
+						})
 
 		if form.is_valid():
 			newuser = form.save(commit=False)
@@ -611,12 +428,10 @@ def SignUpView (request):
 			user = authenticate(request, username=username, password=password)
 			if user is not None:
 				login(request, user)
-			create_purse (user)
-			adduserdefaults (user)
 			send_user_mail (	recipients = 	email,
-								title = 		_('¡Welcome to your Homebank online Purse!'),
+								title = 		'¡Bienvenido a purse!',
 								template = 		'purse/mails/welcome_user.html',
-								txtcontent = 	_('%(username)s welcome to your Homebank online Purse.')% {'username': username},
+								txtcontent = 	'%s te damos la bienvenida a purse.'%username,
 								templatecontext = {
 													'domain'	:	settings.TEMPLATE_DOMAIN,
 													'user'		:	user,
@@ -625,29 +440,34 @@ def SignUpView (request):
 								)
 			return redirect ('purse:welcome')
 		else:
-			context = {	'title'	: _('Sign up yourself'),
-						'msg' 	: _('Some fields where incorrect.'),
+			return render (request, 'purse/msgs/msgconfirm.html',
+						{
+						'title'	: 'Date de alta',
+						'msg' 	: 'Algunos campos del formulario fueron incorrectos.',
 						'back' 	: True,
-						}
-			context.update (basecontext (request) )
-			return render (request, 'purse/msgs/msgconfirm.html', context)
+						})
 	form = SignUpForm
-	context = {	'form': form,
-				'head': _('Sign up yourself'),
-				}
-	context.update (basecontext (request) )
-	return render (request, 'purse/singup.html', context)
+	return render (request, 'purse/singup.html',
+							 {
+							'form': form,
+							'head': "Date de alta",
+							})
 
+@need_login
 def editdata_user (request, pk):
-	try:
-		userweb = User.objects.get(pk = pk)
-	except:
-		# requested user does not exist
-		return redirect ('purse:welcome')
-	if request.user != userweb:
-		# requested user and logged user is not the same
-		return redirect ('purse:welcome')
+	user = get_object_or_404 (User, pk = pk)
+	if request.user != user:
+		return redirect (f"{reverse('purse:login_user')}?next={request.path}")
 	if request.method == "POST":
+		try:
+			validate_email (request.POST ['email'])
+		except:
+			return render (request, 'purse/msgs/msgconfirm.html',
+						{
+						'title'	: 'Editar datos de usuario',
+						'msg' 	: 'Introduce un e-mail válido',
+						'back' 	: True,
+						})
 		try:
 			request.POST ['showinactive']
 			showinactive = True
@@ -659,66 +479,56 @@ def editdata_user (request, pk):
 			userconfig.save()
 		except:
 			userconfig = UserConfig.objects.create (user = request.user, showinactive = showinactive)
-		
-		userdata = User.objects.get (pk = pk)
+		userdata = user
 		userdata.first_name = request.POST ['first_name']
 		userdata.last_name	= request.POST ['last_name']
-		email = request.POST ['email']
-		try:
-			validate_email (email)
-		except:
-			context = {	'title'	: _('Edit your data'),
-						'msg' 	: _('Please, set a valid e-mail'),
-						'back' 	: True,
-						}
-			context.update (basecontext (request) )
-			return render (request, 'purse/msgs/msgconfirm.html', context )
 		userdata.email = request.POST ['email']
 		userdata.save()
-		context = { 'title'	: _('Edit your data'),
-					'msg' 	: _('Your data has been stored'),
-					'ppal'	: True,
-					}
-		context.update (basecontext (request) )
-		return render (request, 'purse/msgs/msgconfirm.html', context ) 
-	context = {	'user'				: 	request.user,
-				'userconfig'		: 	UserConfig.objects.get(user=request.user),
+		return render (request, 'purse/msgs/msgconfirm.html',
+				{
+				'title'	: 'Actualizar tus datos',
+				'msg' 	: 'Tus datos se han guardado.',
+				'ppal'	: True,
+				})
+	try:
+		userconfig = UserConfig.objects.get (user = user)
+	except:
+		userconfig = None
+
+	context = {	'user'					: 	request.user,
+				'userconfig'			: 	userconfig,
 			}
-	context.update (basecontext (request) )
 	return render (request, 'purse/editdata_user.html', context)
 
+@need_login
 def changepass_user (request, pk):
-	try:
-		userweb = User.objects.get(pk = pk)
-	except:
-		# requested user does not exist
-		return redirect ('purse:welcome')
-	if request.user != userweb:
-		# requested user and logged user is not the same
-		return redirect ('purse:welcome')
+	user = get_object_or_404 (User, pk = pk)
+	if request.user != user:
+		return redirect (f"{reverse('purse:login_user')}?next={request.path}")
 	if request.method == "POST":
 		password  = request.POST ['password1']
 		password2 = request.POST ['password2']
 		if password != password2:
-			return HttpResponse ('Passwords do not match.')
+			return HttpResponse ('Las contraseñas no coinciden')
 		user = User.objects.get(username = request.user)
 		user.set_password (password)
 		user.save()
 		login(request, user)
-		context = {	'title'	: _('Change your password'),
-					'msg' 	: _('Your password has changed'),
+		return render (request, 'purse/msgs/msgconfirm.html',
+					{
+					'title'	: 'Cambiar contraseña',
+					'msg' 	: 'La contraseña ha cambiado',
 					'ppal'	: True,
-					}
-		context.update (basecontext (request) )
-		return render (request, 'purse/msgs/msgconfirm.html', context)
+					})
 
 	form = PasschForm (instance = request.user)
-	context = {	'form' : form,
-				'head' : _('Enter a new password'),
-				}
-	context.update (basecontext (request) )
-	return render (request, 'purse/singup.html', context)
+	return render (request, 'purse/singup.html', 
+				{
+				'form' : form,
+				'head' : "Ingresa una nueva contraseña"
+				})
 
+@force_logout
 def resetmypassw (request):
 	if request.method == "POST":
 		username = request.POST ['username']
@@ -726,22 +536,22 @@ def resetmypassw (request):
 		try:
 			validate_email (email)
 		except:
-			return HttpResponse ('Please, set a valid e-mail: <strong>%s</strong>'%email)
+			return HttpResponse ('introduce un e-mail válido: <strong>%s</strong>'%email)
 		try:
 			user = User.objects.get(email = email, username = username)
 		except:
-			context = {	'title'	: _('Reset your password'),
-						'msg' 	: _('There is not user with this data'),
+			return render (request, 'recetas/msgs/msgconfirm.html',
+						{
+						'title'	: 'Restablecer contraseña',
+						'msg' 	: 'No hay ningún usuario registrado con estos datos',
 						'back'	: True,
-						}
-			context.update (basecontext (request) )
-			return render (request, 'purse/msgs/msgconfirm.html', context)
+						})
 		uid = urlsafe_base64_encode(force_bytes(user.pk))
 		token = default_token_generator.make_token(user)
 		send_user_mail (	recipients = 	user.email,
-							title = 		_('Password restore'),
+							title = 		'Restablece la contraseña',
 							template = 		'purse/mails/password_reset.html',
-							txtcontent = 	_('%(username)s, there is one little step to reset your password.')%{'username', username},
+							txtcontent = 	'%s, aún te queda un paso más para restablecer tu contraseña'%username,
 							templatecontext = {
 												'domain'	:	settings.TEMPLATE_DOMAIN,
 												'user'		:	user,
@@ -749,38 +559,35 @@ def resetmypassw (request):
 												'token'		:	token,
 												}
 							)
-		context = {	'title'	: _('Password reset'),
-					'msg' 	: _('an e-mail has been send to reset your password'),
-					'ppal' 	: True,
-					}
-		context.update (basecontext (request) )
-		return render (request, 'purse/msgs/msgconfirm.html', context)
-	context = {}
-	context.update (basecontext (request) )
-	return render (request, 'purse/remembermypassword_user.html', context )
+		return render (request, 'purse/msgs/msgconfirm.html',
+						{
+						'title'	: 'Restablecer contraseña',
+						'msg' 	: 'Se ha enviado un e-mail para restablecer su contraseña',
+						'ppal' 	: True,
+						})
+	return render (request, 'purse/remembermypassword_user.html', {} )
 
+@force_logout
 def resetconfirm (request, uidb64, token):
 	if request.method == "POST":
 		password  = request.POST ['password1']
 		password2 = request.POST ['password2']
 		if password != password2:
-			return HttpResponse (_('passwords did not match'))
+			return HttpResponse ('Las contraseñas no coinciden')
 		for user in User.objects.all():
 			if default_token_generator.check_token(user, token):
 				break
 		user.set_password (password)
 		user.save()
-
 		login(request, user)
-		context = { 'title'	: _('Set your password'),
-					'msg' 	: _('Your new password has been stored'),
+		return render (request, 'purse/msgs/msgconfirm.html',
+					{
+					'title'	: 'Restablecer la contraseña',
+					'msg' 	: 'La contraseña ha sido restablecida',
 					'ppal'	: True,
-					}
-		context.update (basecontext (request) )
-		return render (request, 'purse/msgs/msgconfirm.html', context)
+					})
 	form = PasschForm ()
-	context = {	'form' : form,
-				'head' : _('Set your new password')
-				}
-	context.update (basecontext (request) )
-	return render (request, 'purse/singup.html', context)
+	return render (request, 'purse/singup.html', {
+				'form' : form,
+				'head' : "Ingresa una nueva contraseña"
+				})	

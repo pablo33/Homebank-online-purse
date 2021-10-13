@@ -1,0 +1,15 @@
+{% load static %}
+{% load i18n %}
+
+<p>
+	{% if page.has_previous %}
+		<a href="?page=1"><img class="icons" src="{% static 'purse/images/i-pag_first.png' %}"></a>
+		<a href="?page={{ page.previous_page_number }}"><img class="icons" src="{% static 'purse/images/i-pag_prev.png' %}"></a>
+	{% endif %}
+		{% trans 'page'%} {{page.number}} {% trans 'of' %} {{page.paginator.num_pages}}
+		
+	{% if page.has_next %}
+		<a href="?page={{ page.next_page_number }}"><img class="icons" src="{% static 'purse/images/i-pag_next.png' %}"></a>
+		<a href="?page={{ page.paginator.num_pages }}"><img class="icons" src="{% static 'purse/images/i-pag_last.png' %}"></a>
+	{% endif %}
+</p>

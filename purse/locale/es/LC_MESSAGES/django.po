@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-05-29 10:38+0200\n"
+"POT-Creation-Date: 2021-10-07 09:51+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Pablo Casas <pablolabora@gmx.es>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -17,71 +17,94 @@ msgstr ""
 "Content-Type: text/plain; charset=UTF-8\n"
 "Content-Transfer-Encoding: 8bit\n"
 
-#: forms.py:33
+#: forms.py:13
+msgid "First Name"
+msgstr "Nombre"
+
+#: forms.py:14
+msgid "Last Name"
+msgstr "Apellidos"
+
+#: forms.py:15 templates/purse/editdata_user.html:11
+#: templates/purse/remembermypassword_user.html:11
+msgid "e-mail"
+msgstr "Correo electrónico"
+
+#: forms.py:27 templates/purse/login.html:9
+msgid "User"
+msgstr "Usuario"
+
+#: forms.py:28 forms.py:29 templates/purse/login.html:10
+#, fuzzy
+#| msgid "Password reset"
+msgid "Password"
+msgstr "Restablecer contraseña"
+
+#: forms.py:41
 msgid "Reset purse to this amount"
 msgstr "Resetear monedero a esta cantidad"
 
-#: forms.py:38 templates/purse/editdata_user.html:9
+#: forms.py:46 templates/purse/editdata_user.html:9
 msgid "Name"
 msgstr "Nombre"
 
-#: forms.py:39
+#: forms.py:47
 msgid "Color"
 msgstr "Color"
 
-#: forms.py:41
+#: forms.py:49
 msgid "Active"
 msgstr "Activo"
 
-#: forms.py:42
+#: forms.py:50
 msgid "Currency"
 msgstr "Moneda"
 
-#: forms.py:43
+#: forms.py:51
 msgid "Show exported expenses"
 msgstr "Mostrar gastos exportados"
 
-#: forms.py:47
+#: forms.py:55
 msgid "Date"
 msgstr "Fecha"
 
-#: forms.py:59
+#: forms.py:67
 msgid "info"
 msgstr "Información"
 
-#: forms.py:60
+#: forms.py:68
 msgid "paymode"
 msgstr "Método pago"
 
-#: forms.py:61
+#: forms.py:69
 msgid "payee"
 msgstr "Pagador"
 
-#: forms.py:62
+#: forms.py:70
 msgid "wording"
 msgstr "Descripción"
 
-#: forms.py:63
+#: forms.py:71
 msgid "amount"
 msgstr "Cantidad"
 
-#: forms.py:64
+#: forms.py:72
 msgid "tags"
 msgstr "Tags"
 
-#: forms.py:65
+#: forms.py:73
 msgid "image"
 msgstr "Imagen"
 
-#: models.py:24
+#: models.py:32
 msgid "my purse"
 msgstr "Mi mondedero"
 
-#: models.py:24
+#: models.py:32
 msgid "Purse/wallet name"
 msgstr "Nombre del monedero"
 
-#: models.py:88
+#: models.py:231
 msgid "Activate to show inactive purses/wallets"
 msgstr "Activar para mostrar monederos inactivos"
 
@@ -105,18 +128,13 @@ msgstr "Date de alta"
 msgid "Restore my password"
 msgstr "Restarurar mi contraseña"
 
-#: templates/purse/editdata_user.html:6 views.py:645 views.py:653
+#: templates/purse/editdata_user.html:6
 msgid "Edit your data"
 msgstr "Edita tus datos"
 
 #: templates/purse/editdata_user.html:10
 msgid "Last name"
 msgstr "Apellidos"
-
-#: templates/purse/editdata_user.html:11
-#: templates/purse/remembermypassword_user.html:11
-msgid "e-mail"
-msgstr "e-mail"
 
 #: templates/purse/editdata_user.html:12
 msgid "Show inactive purses"
@@ -130,14 +148,14 @@ msgstr "Guardar cambios"
 msgid "Other actions"
 msgstr "Otras acciones"
 
-#: templates/purse/editdata_user.html:20 views.py:683
+#: templates/purse/editdata_user.html:20
 msgid "Change your password"
 msgstr "Cambia tu contraseña"
 
 #: templates/purse/editdata_user.html:21 templates/purse/modify_expense.html:14
 #: templates/purse/modify_purse.html:13 templates/purse/new_purse.html:13
 #: templates/purse/remembermypassword_user.html:13
-#: templates/purse/showimage.html:19 templates/purse/singup.html:12
+#: templates/purse/showimage.html:19 templates/purse/singup.html:13
 msgid "Back"
 msgstr "Volver"
 
@@ -176,7 +194,7 @@ msgstr "Tu balance en el monedero es %(cuantity)s %(currency)s"
 msgid "Showing exported expenses"
 msgstr "Mostrando gastos exportados"
 
-#: templates/purse/expenses_add.html:66
+#: templates/purse/expenses_add.html:69
 msgid "Export expenses to CSV"
 msgstr "Exportar gastos a CSV"
 
@@ -207,19 +225,19 @@ msgstr[1] ""
 "\n"
 " Hay %(acount)s apuntes para exportar en %(apurse)s.\n"
 
-#: templates/purse/expenses_export.html:35
+#: templates/purse/expenses_export.html:40
 msgid "Are you ready to get your CSV file?"
 msgstr "¿Preparado para descargar tu archivo CSV?"
 
-#: templates/purse/expenses_export.html:41
+#: templates/purse/expenses_export.html:46
 msgid "Yes, give me my data"
 msgstr "Sí, descarga el fichero"
 
-#: templates/purse/expenses_export.html:42
+#: templates/purse/expenses_export.html:47
 msgid "Not yet"
 msgstr "No, aún no"
 
-#: templates/purse/expenses_export.html:46
+#: templates/purse/expenses_export.html:51
 msgid ""
 "This expenses won't be marked as exported, untill you press here. So be sure "
 "you have your CSV file and press here to mark all expenses as exported."
@@ -228,7 +246,7 @@ msgstr ""
 "que te descargas el fichero CSV y pulsa luego aquí para que los gastos se "
 "marquen como exportados."
 
-#: templates/purse/expenses_export.html:48
+#: templates/purse/expenses_export.html:53
 msgid "There are no expenses to export"
 msgstr "No hay apuntes para exportar"
 
@@ -244,21 +262,19 @@ msgstr ""
 "Últimos %(days)s días: %(visits)s visitas | %(users)s usuarios activos | "
 "%(apurses)s monederos activos.\n"
 
+#: templates/purse/includes/paginator_controls.html:9
+msgid "page"
+msgstr "página"
+
+#: templates/purse/includes/paginator_controls.html:9
+msgid "of"
+msgstr "de"
+
 #: templates/purse/login.html:6
 msgid "Log In"
 msgstr "Identifícate"
 
-#: templates/purse/login.html:9
-msgid "User"
-msgstr "Usuario"
-
-#: templates/purse/login.html:10
-#, fuzzy
-#| msgid "Password reset"
-msgid "Password"
-msgstr "Restablecer contraseña"
-
-#: templates/purse/login.html:12 views.py:530
+#: templates/purse/login.html:12
 msgid "Login"
 msgstr "Logarse"
 
@@ -314,7 +330,7 @@ msgstr "Imagen para el gasto"
 msgid "Delete Image"
 msgstr "Borrar imagen"
 
-#: templates/purse/singup.html:11
+#: templates/purse/singup.html:12
 msgid "Send"
 msgstr "Enviar"
 
@@ -359,97 +375,76 @@ msgstr "¿Quieres probar o tener tu propio servicio?"
 msgid "In this case, don't forget having a look to the development page:"
 msgstr "En ese caso, no olvides echar un vistazo a la página de desarrollo:"
 
-#: views.py:531
-msgid "User or password incorrect."
-msgstr "Usuario o contraseña incorrecto"
+#~ msgid "User or password incorrect."
+#~ msgstr "Usuario o contraseña incorrecto"
 
-#: views.py:562 views.py:576 views.py:603 views.py:611
-msgid "Sign up yourself"
-msgstr "Date de alta"
+#~ msgid "Sign up yourself"
+#~ msgstr "Date de alta"
 
-#: views.py:563
-msgid "User already exists."
-msgstr "Usuario ya existe"
+#~ msgid "User already exists."
+#~ msgstr "Usuario ya existe"
 
-#: views.py:572
 #, python-format
-msgid "Sign up with a valid e-mail:%(email)s)"
-msgstr "Date de alta con un e-mail válido:%(email)s"
+#~ msgid "Sign up with a valid e-mail:%(email)s)"
+#~ msgstr "Date de alta con un e-mail válido:%(email)s"
 
-#: views.py:577
-msgid "Passwords does not match."
-msgstr "LAs contraseñas no coinciden."
+#~ msgid "Passwords does not match."
+#~ msgstr "LAs contraseñas no coinciden."
 
-#: views.py:592
-msgid "¡Welcome to your Homebank online Purse!"
-msgstr "¡Bienvenido a tu monedero online de HomeBank!"
+#~ msgid "¡Welcome to your Homebank online Purse!"
+#~ msgstr "¡Bienvenido a tu monedero online de HomeBank!"
 
-#: views.py:594
 #, fuzzy, python-format
-#| msgid "%(username)s welcome to your HomeBank online Purse."
-msgid "%(username)s welcome to your Homebank online Purse."
-msgstr "%(username)s bienvenido a tu monedero online de HomeBank."
+#~| msgid "%(username)s welcome to your HomeBank online Purse."
+#~ msgid "%(username)s welcome to your Homebank online Purse."
+#~ msgstr "%(username)s bienvenido a tu monedero online de HomeBank."
 
-#: views.py:604
-msgid "Some fields where incorrect."
-msgstr "Algunos campos estaban incorrectos."
+#~ msgid "Some fields where incorrect."
+#~ msgstr "Algunos campos estaban incorrectos."
 
-#: views.py:646
-msgid "Please, set a valid e-mail"
-msgstr "Por favor, indica un e-mail válido"
+#~ msgid "Please, set a valid e-mail"
+#~ msgstr "Por favor, indica un e-mail válido"
 
-#: views.py:654
-msgid "Your data has been stored"
-msgstr "Sus datos se han guardado"
+#~ msgid "Your data has been stored"
+#~ msgstr "Sus datos se han guardado"
 
-#: views.py:684
-msgid "Your password has changed"
-msgstr "Tu contraseña ha cambiado"
+#~ msgid "Your password has changed"
+#~ msgstr "Tu contraseña ha cambiado"
 
-#: views.py:692
-msgid "Enter a new password"
-msgstr "Introduce una nueva contraseña"
+#~ msgid "Enter a new password"
+#~ msgstr "Introduce una nueva contraseña"
 
-#: views.py:708
-msgid "Reset your password"
-msgstr "Restablece tu contraseña"
+#~ msgid "Reset your password"
+#~ msgstr "Restablece tu contraseña"
 
-#: views.py:709
-msgid "There is not user with this data"
-msgstr "No hay ningún usuario con estos datos"
+#~ msgid "There is not user with this data"
+#~ msgstr "No hay ningún usuario con estos datos"
 
-#: views.py:717
-msgid "Password restore"
-msgstr "Restablecer contraseña"
+#~ msgid "Password restore"
+#~ msgstr "Restablecer contraseña"
 
-#: views.py:719
 #, python-format
-msgid "%(username)s, there is one little step to reset your password."
-msgstr "%(username)s, hay un pequeño paso más para restablecer tu contraseña."
+#~ msgid "%(username)s, there is one little step to reset your password."
+#~ msgstr ""
+#~ "%(username)s, hay un pequeño paso más para restablecer tu contraseña."
 
-#: views.py:727
-msgid "Password reset"
-msgstr "Restablecer contraseña"
+#~ msgid "Password reset"
+#~ msgstr "Restablecer contraseña"
 
-#: views.py:728
-msgid "an e-mail has been send to reset your password"
-msgstr "un e-mail ha sido enviado para restablecer tu contraseña"
+#~ msgid "an e-mail has been send to reset your password"
+#~ msgstr "un e-mail ha sido enviado para restablecer tu contraseña"
 
-#: views.py:742
-msgid "passwords did not match"
-msgstr "las contraseñas no coinciden"
+#~ msgid "passwords did not match"
+#~ msgstr "las contraseñas no coinciden"
 
-#: views.py:750
-msgid "Set your password"
-msgstr "Establece tu contraseña"
+#~ msgid "Set your password"
+#~ msgstr "Establece tu contraseña"
 
-#: views.py:751
-msgid "Your new password has been stored"
-msgstr "Tu nueva contraseña ha sido almacenada"
+#~ msgid "Your new password has been stored"
+#~ msgstr "Tu nueva contraseña ha sido almacenada"
 
-#: views.py:758
-msgid "Set your new password"
-msgstr "Establece tu nueva contraseña"
+#~ msgid "Set your new password"
+#~ msgstr "Establece tu nueva contraseña"
 
 #~ msgid "Adjustment"
 #~ msgstr "Ajuste"

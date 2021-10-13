@@ -6,9 +6,9 @@
 <div class="">
 <h2>{% trans 'Export information'%}</h2>
 
-{% if count %}
+{% if page.paginator.count %}
 <p>
-{% blocktrans with apurse=purse.name count acount=count %}
+{% blocktrans with apurse=purse.name count acount=page.paginator.count %}
 There is one expense to export in {{ apurse }}.
 {% plural %}
 There are {{ acount }} expenses to export in {{ apurse }}.
@@ -17,7 +17,7 @@ There are {{ acount }} expenses to export in {{ apurse }}.
 
 
 <table>
-{% for expense in expenses %}
+{% for expense in page %}
 	<tr class="exported_{{ expense.exported }}">
 	<td class="table_date"><a href="{% url 'purse:expenses_modify' pk=expense.pk %}">{{ expense.date|date:'D d/M' }}</a></td>
 	<td class="table_wording"><a href="{% url 'purse:expenses_modify' pk=expense.pk %}">{{ expense.wording }}</a></td>
@@ -31,6 +31,11 @@ There are {{ acount }} expenses to export in {{ apurse }}.
 	</tr>
 {% endfor %}
 </table>
+
+{% if page.paginator.num_pages > 1  %}
+	{% include 'purse/includes/paginator_controls.html' %}
+{% endif  %}
+
 
 <p>{% trans 'Are you ready to get your CSV file?' %}</p>
 

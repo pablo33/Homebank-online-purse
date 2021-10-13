@@ -32,10 +32,9 @@
 </p>
 {% endif %}
 
-
 {% if count %}
 <table>
-{% for expense in expenses %}
+{% for expense in page %}
 	<tr class="exported_{{ expense.exported }}">
 	{% if not expense.exported %}
 	<td class="table_date"><a href="{% url 'purse:expenses_modify' pk=expense.pk %}">{{ expense.date|date:'D d/M' }}</a></td>
@@ -62,6 +61,10 @@
 	</tr>
 {% endfor %}
 </table>
+
+{% if page.paginator.num_pages > 1  %}
+	{% include 'purse/includes/paginator_controls.html' %}
+{% endif  %}
 
 <p><a href="{% url 'purse:expenses_export' pk=purse.pk %}">{% trans 'Export expenses to CSV' %}</a></p>
 {% endif %}

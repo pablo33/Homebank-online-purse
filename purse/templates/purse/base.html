@@ -32,7 +32,7 @@
 			{% else %}
 			<li><a href="{% url 'purse:login_user' %}{% if next %}?next={{ next }}{% endif %}">{% trans 'Log in' %}</a></li>
 			<li><a href="{% url 'purse:signup_user' %}">{% trans 'Sign up' %}</a></li>
-			<li><a href="{% url 'purse:sendmypassw' %}">{% trans 'Restore my password' %}</a></li>
+			<li><a href="{% url 'purse:resetmypassw' %}">{% trans 'Restore my password' %}</a></li>
 			{% endif %}
 		</ul>
 </nav>
