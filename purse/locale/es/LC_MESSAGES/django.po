@@ -8,7 +8,7 @@ msgid ""
 msgstr ""
 "Project-Id-Version: PACKAGE VERSION\n"
 "Report-Msgid-Bugs-To: \n"
-"POT-Creation-Date: 2021-10-07 09:51+0200\n"
+"POT-Creation-Date: 2021-10-17 21:02+0200\n"
 "PO-Revision-Date: YEAR-MO-DA HO:MI+ZONE\n"
 "Last-Translator: Pablo Casas <pablolabora@gmx.es>\n"
 "Language-Team: LANGUAGE <LL@li.org>\n"
@@ -374,6 +374,13 @@ msgstr "¿Quieres probar o tener tu propio servicio?"
 #: templates/purse/welcome.html:16
 msgid "In this case, don't forget having a look to the development page:"
 msgstr "En ese caso, no olvides echar un vistazo a la página de desarrollo:"
+
+#: templates/purse/welcome.html:18
+msgid ""
+"This website only uses own cookies to improve the user experience through "
+"browsing. If you continue browsing you accept its use."
+msgstr ""
+"Esta web utiliza cookies propias para mejorar la experiencia del usuario a " "través de su navegación. Si continúas navegando aceptas su uso"
 
 #~ msgid "User or password incorrect."
 #~ msgstr "Usuario o contraseña incorrecto"

@@ -43,8 +43,8 @@ There are {{ acount }} expenses to export in {{ apurse }}.
 		{% csrf_token %}
 		<!-- {{ form.as_p }} -->
 		<p>
-		<input type="submit" value="{% trans "Yes, give me my data" %}"/>
-		<input type="button" value="{% trans "Not yet" %}" onclick="javascript: history.go(-1)" />
+		<input type="submit" value="{% trans 'Yes, give me my data' %}"/>
+		<input type="button" value="{% trans 'Not yet' %}" onclick="javascript: history.go(-1)" />
 		</p>
 	</form>
 

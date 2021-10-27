@@ -1,13 +1,14 @@
 import os
-from random import randint
 from PIL import Image
+from random import randint
 from decimal import Decimal
+from datetime import timedelta
 
-from hbpurse import settings
+from proyectos33 import settings
 from purse import preferences as pref
 
-from django.db.models import Sum
 from django.db import models
+from django.utils import timezone
 from django.utils.translation import gettext_lazy as _
 
 
@@ -28,14 +29,14 @@ class Account (models.Model):
 		('backg06','Gold'),
 		]
 
-	user 	= models.ForeignKey ('auth.User', on_delete=models.CASCADE, blank=False, null=False)		# related User object
-	name	= models.CharField (max_length=40, null=False, blank=False, default=_('my purse'), help_text=_('Purse/wallet name'))		# Name it
-	color	= models.CharField (max_length=7, choices=colorchoices, default="#FFD700")	# background color (default Gold)
-	adjustment = models.DecimalField (max_digits=6, decimal_places=2, default=0)		# starting amount of the account / adjust your real money
-	active = models.BooleanField (default=True)					# Activate or deactivate the account
-	cuantity = models.DecimalField (max_digits=6, decimal_places=2, default=0)		# Cuantity for this account
-	currency= models.CharField (max_length=8, blank=True, default="€")
-	showexported=models.BooleanField (default=False)
+	user 		=	models.ForeignKey ('auth.User', on_delete=models.CASCADE, blank=False, null=False)		# related User object
+	name		=	models.CharField (max_length=40, null=False, blank=False, default=_('my purse'), help_text=_('Purse/wallet name'))		# Name it
+	color		=	models.CharField (max_length=7, choices=colorchoices, default="#FFD700")	# background color (default Gold)
+	adjustment  =	models.DecimalField (max_digits=6, decimal_places=2, default=0)		# starting amount of the account / adjust your real money
+	active 		=	models.BooleanField (default=True)					# Activate or deactivate the account
+	cuantity 	=	models.DecimalField (max_digits=6, decimal_places=2, default=0)		# Cuantity for this account
+	currency 	=	models.CharField (max_length=8, blank=True, default="€")
+	showexported = 	models.BooleanField (default=False)
 
 	def __str__ (self):
 		return self.name
@@ -45,7 +46,7 @@ class Account (models.Model):
 		self.save()
 
 	def update_account (self):
-		total = (Expense.objects.filter(account=self).aggregate(Sum('amount')))
+		total = (Expense.objects.filter(account=self).aggregate(models.Sum('amount')))
 		sumexpenses = 0
 		if total ['amount__sum'] != None:
 			sumexpenses = "%.2f"%total ['amount__sum']
@@ -232,3 +233,34 @@ class UserConfig (models.Model):
 
 	def __str__ (self):
 		return str(self.user)
+
+# -- related classes --
+
+class Statistics:
+	visitor_since_days = pref.visitor_since_days
+
+	@property
+	def visitor_since (self):
+		# visitors counted since this time. It's a datetime object, calculated
+		return timezone.now() - timedelta (days=self.visitor_since_days)
+
+	@property
+	def visitor_count (self):
+		# visitors counter, a calculated field
+		return VisitCounter.objects.filter(timevisit__gt = self.visitor_since, app='purse').count()
+
+	@property
+	def users_active (self):
+		# Active users since "visitor_since_days"
+		q = VisitCounter.objects.filter(timevisit__gt = self.visitor_since, app='purse').exclude(user = 'AnonymousUser').aggregate(models.Count('user', distinct=True))
+		return q['user__count']
+
+	@property
+	def purses_count (self):
+		# Number of purses
+		return Account.objects.count()
+
+	@property
+	def purses_active_count (self):
+		# Number of active purses
+		return Account.objects.filter(active = True).count()

@@ -1,4 +1,4 @@
-from .models import Account, Expense, VisitCounter, UserConfig
+from .models import Account, Expense, VisitCounter, UserConfig, Statistics
 from .forms import SignUpForm, PasschForm, PurseForm, ExpenseForm
 
 from decimal import Decimal
@@ -13,13 +13,12 @@ from django.utils.http import urlsafe_base64_encode
 from django.utils.encoding import force_bytes
 from django.utils.translation import gettext as _
 from django.contrib.auth import authenticate, login, logout
-from django.contrib.auth.models import User
+from django.contrib.auth.models import User, Group
 from django.contrib.auth.tokens import default_token_generator
 from django.core.paginator import Paginator
 from django.core.mail import send_mail
 from django.core.validators import validate_email
 from django.template.loader import get_template
-from django.db.models import Count
 from django.urls import reverse
 
 
@@ -31,6 +30,15 @@ def need_login(fx):
 		if request.user.is_authenticated:
 			return fx(*args, **kw_args)
 		return redirect (f"{reverse('pibucket:login_user')}?next={request.path}")
+	return decorator
+
+def need_group(fx):
+	def decorator (*args, **kw_args):
+		request = args[0]
+		if request.user.groups.filter(name=pref.app_auser_group).exists():
+			return fx(*args, **kw_args)
+		return HttpResponse ("Need permission to use the app, please contact to the administrator.")
+		#return redirect (f"{reverse('pibucket:login_user')}?next={request.path}")
 	return decorator
 
 def force_logout(fx):
@@ -72,45 +80,14 @@ def add_visitor(fx):
 		return fx(*args, **kw_args)
 	return decorator
 
-class Statistics:
-	"""Statistics for database """
-	visitor_since_days = 30		# counts the number of visits since las xx days
-	visitor_count = None		# visitors counter, a calculated field
-	visitor_since = None 		# visitors counted since this time. It's a datetime object, calculated
-	users_number  = None 		# Number of users at database
-	users_active  = None 		# Active users since "visitor_since_days"
-	purses_count  = None 		# Number of purses
-	purses_active_count = None # Number of active purses
-
-	def __init__(self):
-		self.update()
-
-	def update (self):
-		self.__visitor_sumarize__(self.visitor_since_days)
-		self.__purses_count__()
-		self.__users__ ()
-
-	def __visitor_sumarize__(self, days = visitor_since_days):
-		""" number of visitors since xx days
-		it returns an integer.
-			"""
-		if type(days) is not type(int()):
-			raise NotIntegerError()
-		datesince = timezone.now() - timedelta (days=days)
-		self.visitor_count = VisitCounter.objects.filter(timevisit__gt = datesince, app='purse').count()
-		self.visitor_since_days = days
-		self.visitor_since = datesince
-		q = VisitCounter.objects.filter(timevisit__gt = datesince, app='purse').exclude(user = 'AnonymousUser').aggregate(Count('user', distinct=True))
-		self.users_active = q['user__count']
-
-	def __purses_count__ (self):
-		self.purses_count = Account.objects.count()
-		self.purses_active_count = Account.objects.filter(active = True).count()
-
-	def __users__ (self):
-		self.users_number = User.objects.count()
-
-STnumbers = Statistics()
+def need_staff(fx):
+	def decorator (*args, **kw_args):
+		request = args[0]
+		if request.user.is_staff:
+			return fx(*args, **kw_args)
+		logout (request)
+		return redirect (request.path)
+	return decorator
 
 def send_user_mail(recipients, title, template, templatecontext, txtcontent = ''):
 	""" Sends e-mail based on an django template
@@ -150,11 +127,10 @@ def makecsv (expenseslist):
 
 @add_visitor
 def basecontext (request):
-	""" Refresh user session pannels. It takes the last data at DB.
+	""" Refresh user session pannels. For now, only takes the last data at DB.
 		"""
-	STnumbers.update()
 	return {
-			'statistics'		:	STnumbers,
+			'statistics'		:	Statistics(),
 			}
 
 # ----------------------------------------------------------------------------
@@ -162,7 +138,7 @@ def basecontext (request):
 
 def welcome (request):
 	next = request.GET.get('next', '')
-	if request.user.is_authenticated:
+	if request.user.is_authenticated and request.user.groups.filter(name=pref.app_auser_group).exists():
 		try:
 			activestatus = UserConfig.objects.get(user=request.user).showinactive
 		except:
@@ -186,6 +162,7 @@ def welcome (request):
 	return render(request, 'purse/welcome.html', context )  # go to welcome page
 
 @need_login
+@need_group
 def new_purse (request):
 	if request.method == "POST":
 		form = PurseForm(request.POST)
@@ -204,6 +181,7 @@ def new_purse (request):
 	return render (request, 'purse/new_purse.html', context)
 
 @need_login
+@need_group
 def modify_purse (request, pk):
 	account = get_object_or_404 (Account, pk = pk)
 	if request.user != account.user:
@@ -226,6 +204,7 @@ def modify_purse (request, pk):
 	return render (request, 'purse/modify_purse.html', context)
 
 @need_login
+@need_group
 def expenses_purse(request, pk):
 	account = get_object_or_404 (Account, pk = pk)
 	pagenumber = request.GET.get('page', '1')
@@ -249,7 +228,9 @@ def expenses_purse(request, pk):
 			expense.normalize_image()
 			account.update_account()
 
-	expenses = Expense.objects.filter (account = account).order_by ('-date', '-id')
+	expenses = Expense.objects.filter (account=account).order_by ('-date', '-id')
+	if not account.showexported:
+		expenses = expenses.filter(exported=False)
 	paginated = Paginator(object_list=expenses, per_page=pref.expenses_list_maxitems , orphans=pref.expenses_list_orphans, allow_empty_first_page=True)
 	page = paginated.get_page(pagenumber)
 	context = {
@@ -262,6 +243,7 @@ def expenses_purse(request, pk):
 	return render (request, 'purse/expenses_add.html', context)
 
 @need_login
+@need_group
 def expenses_modify (request, pk):
 	expense = get_object_or_404 (Expense, pk = pk)
 	if request.user != expense.account.user:
@@ -294,6 +276,7 @@ def expenses_modify (request, pk):
 	return render (request, 'purse/modify_expense.html', context)
 
 @need_login
+@need_group
 def expenses_delete (request, pk):
 	expense = get_object_or_404 (Expense, pk = pk)
 	if request.user != expense.account.user:
@@ -309,6 +292,7 @@ def expenses_delete (request, pk):
 	return render (request, 'purse/expenses_delete.html', context)
 
 @need_login
+@need_group
 def expenses_export(request, pk):
 	purse = get_object_or_404 (Account, pk = pk)
 	pagenumber = request.GET.get('page', '1')
@@ -330,6 +314,7 @@ def expenses_export(request, pk):
 	return render (request, 'purse/expenses_export.html', context)
 
 @need_login
+@need_group
 def mark_exported (request, pk):
 	purse = get_object_or_404 (Account, pk = pk)
 	if request.user != purse.user:
@@ -341,6 +326,7 @@ def mark_exported (request, pk):
 	return redirect ('purse:expenses', pk=pk)
 
 @need_login
+@need_group
 def expenses_image (request, pk):
 	expense = get_object_or_404 (Expense, pk = pk)
 	if request.user != expense.user:
@@ -426,6 +412,8 @@ def SignUpView (request):
 			newuser = form.save(commit=False)
 			newuser.save ()
 			user = authenticate(request, username=username, password=password)
+			g = Group.objects.get(name=pref.app_auser_group)
+			g.user_set.add(user)			
 			if user is not None:
 				login(request, user)
 			send_user_mail (	recipients = 	email,

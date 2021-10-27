@@ -27,9 +27,9 @@
 	</form>
 <p class="resalt">{% blocktrans with cuantity=purse.cuantity currency=purse.currency %}Your purse balance is {{ cuantity }} {{ currency }}{% endblocktrans %}</p>
 {% if purse.showexported and count %}
-<p class="exported_True">
-{% trans 'Showing exported expenses' %}
-</p>
+	<p class="exported_True">
+	{% trans 'Showing exported expenses' %}
+	</p>
 {% endif %}
 
 {% if count %}
@@ -37,26 +37,24 @@
 {% for expense in page %}
 	<tr class="exported_{{ expense.exported }}">
 	{% if not expense.exported %}
-	<td class="table_date"><a href="{% url 'purse:expenses_modify' pk=expense.pk %}">{{ expense.date|date:'D d/M' }}</a></td>
-	<td class="table_wording"><a href="{% url 'purse:expenses_modify' pk=expense.pk %}">{{ expense.wording }}</a></td>
-	<td class="table_sum {% if expense.amount > 0 %}positive{% endif %}"><a href="{% url 'purse:expenses_modify' pk=expense.pk %}">{{ expense.amount }}</a></td>
-	<td class="table_option"><a href="{% url 'purse:expenses_delete' pk=expense.pk %}">
-	<img class="icons" src="{% static '/purse/images/i-delete.png' %}" alt=""></a>
-	{% if expense.image %}
-	<a href="{% url 'purse:expenses_image' pk=expense.pk %}"><img class="icons" src="{% static 'purse/images/i-image.png' %}" alt="" ></a>
-	{% endif %}
-	</td>
-	{% endif %}
-	
-	{% if expense.exported and purse.showexported %}
-	<td class="table_date">{{ expense.date|date:'D d/M' }}</td>
-	<td class="table_wording">{{ expense.wording }}</td>
-	<td class="table_sum">{{ expense.amount }}</td>
-	<td class="table_option">
-	{% if expense.image %}
-	<a href="{% url 'purse:expenses_image' pk=expense.pk %}"><img class="icons" src="{% static 'purse/images/i-image.png' %}" alt="" ></a>
-	{% endif %}
-	</td>
+		<td class="table_date"><a href="{% url 'purse:expenses_modify' pk=expense.pk %}">{{ expense.date|date:'D d/M' }}</a></td>
+		<td class="table_wording"><a href="{% url 'purse:expenses_modify' pk=expense.pk %}">{{ expense.wording }}</a></td>
+		<td class="table_sum {% if expense.amount > 0 %}positive{% endif %}"><a href="{% url 'purse:expenses_modify' pk=expense.pk %}">{{ expense.amount }}</a></td>
+		<td class="table_option"><a href="{% url 'purse:expenses_delete' pk=expense.pk %}">
+		<img class="icons" src="{% static '/purse/images/i-delete.png' %}" alt=""></a>
+		{% if expense.image %}
+			<a href="{% url 'purse:expenses_image' pk=expense.pk %}"><img class="icons" src="{% static 'purse/images/i-image.png' %}" alt="" ></a>
+		{% endif %}
+		</td>
+	{% else %}
+		<td class="table_date">{{ expense.date|date:'D d/M' }}</td>
+		<td class="table_wording">{{ expense.wording }}</td>
+		<td class="table_sum">{{ expense.amount }}</td>
+		<td class="table_option">
+			{% if expense.image %}
+				<a href="{% url 'purse:expenses_image' pk=expense.pk %}"><img class="icons" src="{% static 'purse/images/i-image.png' %}" alt="" ></a>
+			{% endif %}
+		</td>
 	{% endif %}
 	</tr>
 {% endfor %}
